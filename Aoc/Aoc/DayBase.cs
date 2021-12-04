@@ -27,6 +27,11 @@ namespace Aoc
             }
         }
 
+        protected IEnumerable<int> SplitInts(string line, params char[] seperator)
+        {
+            return line.Split(seperator).Where(s => !string.IsNullOrEmpty(s)).Select(s => int.Parse(s));
+        }
+
         public abstract void Solve();
         public abstract void SolveMain();
     }
