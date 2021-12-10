@@ -6,7 +6,7 @@ namespace Aoc
     {
         static void Main(string[] args)
         {
-            new Day8().SolveMain();
+            new Day9().SolveMain();
         }
     }
 }
