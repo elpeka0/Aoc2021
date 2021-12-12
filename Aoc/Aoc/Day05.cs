@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Aoc
 {
-    public class Day5 : DayBase
+    public class Day05 : DayBase
     {
         public struct Point
         {
@@ -80,7 +80,7 @@ namespace Aoc
             }
         }
 
-        public Day5() : base(5)
+        public Day05() : base(5)
         {
         }
 

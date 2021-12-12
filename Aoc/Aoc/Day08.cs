@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Aoc
 {
-    public class Day8 : DayBase
+    public class Day08 : DayBase
     {
         private class Digit
         {
@@ -75,7 +75,7 @@ namespace Aoc
             new Digit(9, true, true, true, true, false, true, true)
         };
 
-        public Day8() : base(8)
+        public Day08() : base(8)
         {
         }
 

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Aoc
 {
-    public class Day4 : DayBase
+    public class Day04 : DayBase
     {
         private class Board
         {
@@ -74,7 +74,7 @@ namespace Aoc
             }
         }
 
-        public Day4() : base(4)
+        public Day04() : base(4)
         {
         }
 

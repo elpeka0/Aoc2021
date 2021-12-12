@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace Aoc
 {
-    public class Day7 : DayBase
+    public class Day07 : DayBase
     {
-        public Day7() : base(7)
+        public Day07() : base(7)
         {
         }
 

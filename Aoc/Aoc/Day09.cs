@@ -7,7 +7,7 @@ using System.Xml.Serialization;
 
 namespace Aoc
 {
-    public class Day9 : DayBase
+    public class Day09 : DayBase
     {
         private class Point
         {
@@ -76,7 +76,7 @@ namespace Aoc
             }
         }
 
-        public Day9() : base(9)
+        public Day09() : base(9)
         {
         }
 
