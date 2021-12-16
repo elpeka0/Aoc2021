@@ -15,7 +15,6 @@ namespace Aoc
         {
             this.day = day;
         }
-
         protected IEnumerable<string> GetInputLines(bool mainPuzzle)
         {
             var postfix = mainPuzzle ? "-main" : "";
