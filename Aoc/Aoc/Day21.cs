@@ -8,10 +8,10 @@ namespace Aoc
 {
     public class Day21 : DayBase
     {
-        private const int Start1 = 1;
-        private const int Start2 = 5;
-        //private const int Start1 = 4;
-        //private const int Start2 = 8;
+        //private const int Start1 = 1;
+        //private const int Start2 = 5;
+        private const int Start1 = 4;
+        private const int Start2 = 8;
 
         public Day21() : base(21)
         {
@@ -52,42 +52,26 @@ namespace Aoc
             0,0,0,1,3,6,7,6,3,1
         };
 
-        private (long, long) QuantumPlay(int p1, int p2, int s1, int s2, bool turn)
+        private (long, long) QuantumPlay(int p1, int p2, int s1, int s2)
         {
             var w1 = 0L;
             var w2 = 0L;
             for (var d = 3; d <= 9; ++d)
             {
                 var pp1 = p1;
-                var pp2 = p2;
                 var ss1 = s1;
-                var ss2 = s2;
-                if (turn)
+                
+                pp1 = (pp1 + d) % 10;
+                ss1 += pp1 + 1;
+                if (ss1 >= 21)
                 {
-                    pp1 = (pp1 + d) % 10;
-                    ss1 += pp1 + 1;
-                    if (ss1 >= 21)
-                    {
-                        w1 += rolls[d];
-                        ++this.iterCnt;
-                        continue;
-                    }
-                }
-                else
-                {
-                    pp2 = (pp2 + d) % 10;
-                    ss2 += pp2 + 1;
-                    if (ss2 >= 21)
-                    {
-                        w2 += rolls[d];
-                        ++this.iterCnt;
-                        continue;
-                    }
+                    w1 += rolls[d];
+                    continue;
                 }
 
-                var (sub1, sub2) = QuantumPlay(pp1, pp2, ss1, ss2, !turn);
-                w1 += this.rolls[d] * sub1;
-                w2 += this.rolls[d] * sub2;
+                var (sub1, sub2) = QuantumPlay(p2, pp1, s2, ss1);
+                w1 += this.rolls[d] * sub2;
+                w2 += this.rolls[d] * sub1;
             }
 
             return (w1, w2);
@@ -101,7 +85,7 @@ namespace Aoc
 
         public override void SolveMain()
         {
-            var (w1, w2) = QuantumPlay(Start1 - 1, Start2 - 1, 0, 0, true);
+            var (w1, w2) = QuantumPlay(Start1 - 1, Start2 - 1, 0, 0);
             Console.WriteLine(Math.Max(w1, w2));
         }
     }
