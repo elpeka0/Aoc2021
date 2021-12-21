@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection.Metadata;
 using System.Text;
@@ -123,6 +124,8 @@ namespace Aoc
 
         public override void SolveMain()
         {
+            var sw = new Stopwatch();
+            sw.Start();
             var input = this.GetInput();
             for (var i = 0; i < 50; ++i)
             {
@@ -130,6 +133,7 @@ namespace Aoc
             }
 
             Console.WriteLine(input.Grid.Count(kv => kv.Value));
+            Console.WriteLine(sw.ElapsedMilliseconds);
         }
     }
 }
