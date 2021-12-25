@@ -17,6 +17,7 @@ namespace Aoc
             public int Y { get; }
             public int? AmphiPod { get; }
             public bool IsMatch => Y > 0 && AmphiPod != null && GetScore(X) == AmphiPod.Value;
+            public bool IsLocked { get; }
 
             public static int GetScore(int i)
             {
@@ -42,11 +43,12 @@ namespace Aoc
                 return res;
             }
 
-            public Spot(int x, int y, int? amphipod)
+            public Spot(int x, int y, int? amphipod, bool isLocked)
             {
                 this.X = x;
                 this.Y = y;
                 this.AmphiPod = amphipod;
+                this.IsLocked = isLocked;
             }
 
             public override string ToString()
@@ -64,53 +66,19 @@ namespace Aoc
 
         private class Board
         {
-            public Spot[,] Targets { get; }
-            public Spot[] Buffer { get; }
-            public List<Spot> Misplaced { get; }
+            public Dictionary<(int, int), Spot> Spots { get; }
+            public int Depth { get; }
 
-            public Board()
+            public Board(int depth)
             {
-                this.Targets = new Spot[4, 2];
-                this.Buffer = new Spot[7];
-                this.Misplaced = new List<Spot>();
+                this.Spots = new Dictionary<(int, int), Spot>();
+                this.Depth = depth;
             }
 
             private Board(Board other)
             {
-                this.Buffer = other.Buffer.ToArray();
-                this.Misplaced = other.Misplaced.ToList();
-                this.Targets = new Spot[4, 2];
-                for (var x = 0; x < 4; ++x)
-                {
-                    for (var y = 0; y < 2; ++y)
-                    {
-                        this.Targets[x, y] = other.Targets[x, y];
-                    }
-                }
-            }
-
-            public Spot GetSpot(int x, int y)
-            {
-                if (y > 0) return Targets[x / 2 - 1, y - 1];
-                if (x == 10) x = 6;
-                if (x == 2 || x == 4 || x == 6 || x == 8)
-                {
-                    return null;
-                }
-                if (x > 1) x = (x + 1) / 2;
-                return Buffer[x];
-            }
-
-            public void SetSpot(int x, int y, Spot spot)
-            {
-                if (y > 0)
-                {
-                    Targets[x / 2 - 1, y - 1] = spot;
-                    return;
-                }
-                if (x == 10) x = 6;
-                if (x > 1) x = (x + 1) / 2;
-                Buffer[x] = spot;
+                this.Spots = other.Spots.ToDictionary(kv => kv.Key, kv => kv.Value);
+                this.Depth = other.Depth;
             }
 
             public int? MovementCost(int fx, int fy, int tx, int ty)
@@ -118,19 +86,14 @@ namespace Aoc
                 var steps = 0;
                 bool Check(int x, int y)
                 {
-                    var s = GetSpot(x, y);
+                    Spots.TryGetValue((x, y), out var s);
                     ++steps;
                     return s?.AmphiPod == null;
                 }
 
-                if (fy == 2)
+                for (var cy = fy - 1; cy >= 0; --cy)
                 {
-                    if (!Check(fx, 1)) return null;
-                }
-
-                if (fy > 0)
-                {
-                    if (!Check(fx, 0)) return null;
+                    if (!Check(fx, cy)) return null;
                 }
 
                 if (tx < fx)
@@ -148,45 +111,55 @@ namespace Aoc
                     }
                 }
 
-                if (ty > 0)
+                for (var cy = 1; cy <= ty; ++cy)
                 {
-                    if (!Check(tx, 1)) return null;
-                }
-
-                if (ty == 2)
-                {
-                    if (!Check(tx, 2)) return null;
+                    if (!Check(tx, cy)) return null;
                 }
 
                 return steps;
             }
 
+            private IEnumerable<Spot> Below(int x, int y)
+            {
+                for (var cy = y + 1; cy <= Depth; ++cy)
+                {
+                    Spots.TryGetValue((x, cy), out var spot);
+                    yield return spot;
+                }
+            }
+
             public (int?, List<Move>) Solve(string indent)
             {
-                for (var i = Misplaced.Count - 1; i >= 0; --i)
+                var misplaced = new List<Spot>();
+                foreach(var s in Spots.Values)
                 {
-                    var s = Misplaced[i];
-                    if (s.IsMatch && (s.Y == 2 || GetSpot(s.X, s.Y + 1).IsMatch))
+                    if (!s.IsLocked)
                     {
-                        Misplaced.RemoveAt(i);
+                        if (s.IsMatch && Below(s.X, s.Y).All(s => s != null && s.IsMatch))
+                        {
+                            Spots[(s.X, s.Y)] = new Spot(s.X, s.Y, s.AmphiPod, true);
+                        }
+                        else if(s.Y < 2 || !Spots.ContainsKey((s.X, s.Y - 1)))
+                        {
+                            misplaced.Add(s);
+                        }
                     }
                 }
 
-                if (Misplaced.Count == 0)
+                if (misplaced.Count == 0)
                 {
                     return (0, new List<Move>());
                 }
                 
-                (int?, List<Move>) Move(Spot s, int x, int y, int idx)
+                (int?, List<Move>) Move(Spot s, int x, int y)
                 {
                     var cost = MovementCost(s.X, s.Y, x, y);
                     if (cost != null)
                     {
                         var clone = new Board(this);
-                        clone.SetSpot(s.X, s.Y, new Spot(s.X, s.Y, null));
-                        var next = new Spot(x, y, s.AmphiPod);
-                        clone.SetSpot(x, y, next);
-                        clone.Misplaced[idx] = next;
+                        clone.Spots.Remove((s.X, s.Y));
+                        var next = new Spot(x, y, s.AmphiPod, false);
+                        clone.Spots[(x, y)] = next;
                         // Console.WriteLine($"{indent}Move from {s} to {next}");
                         var (c, l) = clone.Solve(indent + "    ");
                         l?.Insert(0, new Move(s, next));
@@ -196,43 +169,42 @@ namespace Aoc
                     return (null, null);
                 }
 
-                for(var i = 0;i < Misplaced.Count;++i)
+                foreach (var s in misplaced)
                 {
-                    var s = Misplaced[i];
                     var x = Spot.GetIndex(s.AmphiPod.Value);
-                    var b = GetSpot(x, 2);
-                    if (b.AmphiPod == null)
+                    for (var cy = Depth; cy >= 1; --cy)
                     {
-                        var (cost, l) = Move(s, x, 2, i);
-                        if (cost != null)
+                        if (!Spots.TryGetValue((x, cy), out var target))
                         {
-                            // Console.WriteLine($"{indent}>> {cost}");
-                            return (cost, l);
+                            var (cost, l) = Move(s, x, cy);
+                            if (cost != null)
+                            {
+                                // Console.WriteLine($"{indent}>> {cost}");
+                                return (cost, l);
+                            }
+                            else
+                            {
+                                break;
+                            }
                         }
-                    }
-                    else if (b.IsMatch)
-                    {
-                        var (cost, l) = Move(s, x, 1, i);
-                        if (cost != null)
+                        else if (!target.IsMatch)
                         {
-                            // Console.WriteLine($"{indent}>> {cost}");
-                            return (cost, l);
+                            break;
                         }
                     }
                 }
 
                 int? total = null;
                 List<Move> retl = null;
-                for (var i = 0; i < Misplaced.Count; ++i)
+                foreach (var s in misplaced)
                 {
-                    var s = Misplaced[i];
                     if (s.Y > 0)
                     {
                         for (var x = 0; x < 11; ++x)
                         {
                             if (x % 2 != 0 || x == 0 || x == 10)
                             {
-                                var (cost, l) = Move(s, x, 0, i);
+                                var (cost, l) = Move(s, x, 0);
                                 if (cost != null && (total == null || cost < total))
                                 {
                                     total = cost;
@@ -269,26 +241,37 @@ namespace Aoc
         //private int[] Seed => new[] { 1000, 1, 10, 10, 100, 100, 1000, 1 };
         private int[] Seed => new[] { 100, 10, 10, 100, 1, 1000, 1000, 1 };
 
-        private Board GetInput()
+        private Board GetInput(int depth)
         {
-            var res = new Board();
+            var res = new Board(depth);
             for (var x = 0; x < 4; ++x)
             {
                 for (var y = 0; y < 2; ++y)
                 {
-                    var s = new Spot(2 + 2 * x, y + 1, Seed[2 * x + y]);
-                    res.Targets[x, y] = s;
-                    res.Misplaced.Add(s);
+                    var ax = 2 + 2 * x;
+                    var ay = y == 0 ? 1 : depth;
+                    var s = new Spot(ax, ay, Seed[2 * x + y], false);
+                    res.Spots[(ax, ay)] = s;
                 }
             }
 
-            for (var i = 0; i < res.Buffer.Length; ++i)
+            if(depth == 4)
             {
-                var offset = 0;
-                if (i > 1) offset = i - 1;
-                if (i == 6) offset = 4;
-                res.Buffer[i] = new Spot(i + offset, 0, null);
+                void Put(int x, int y, int value)
+                {
+                    var s = new Spot(x, y, value, false);
+                    res.Spots[(x, y)] = s;
+                }
+                Put(2, 2, 1000);
+                Put(2, 3, 1000);
+                Put(4, 2, 100);
+                Put(4, 3, 10);
+                Put(6, 2, 10);
+                Put(6, 3, 1);
+                Put(8, 2, 1);
+                Put(8, 3, 100);
             }
+
             return res;
         }
 
@@ -298,18 +281,27 @@ namespace Aoc
 
         public override void Solve()
         {
-            var input = this.GetInput();
+            var sw = new Stopwatch();
+            sw.Start();
+            var input = this.GetInput(2);
             var (res, l) = input.Solve(string.Empty);
             Console.WriteLine(res);
             foreach (var m in l)
             {
                 Console.WriteLine(m);
             }
+            Console.WriteLine(sw.ElapsedMilliseconds);
         }
 
         public override void SolveMain()
         {
-            throw new NotImplementedException();
+            var input = this.GetInput(4);
+            var (res, l) = input.Solve(string.Empty);
+            Console.WriteLine(res);
+            foreach (var m in l)
+            {
+                Console.WriteLine(m);
+            }
         }
     }
 }
