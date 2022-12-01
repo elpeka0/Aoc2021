@@ -18,7 +18,7 @@ namespace Aoc
         protected IEnumerable<string> GetInputLines(bool mainPuzzle)
         {
             var postfix = mainPuzzle ? "-main" : "";
-            using var reader = File.OpenText($"input\\input{postfix}{this.day}.txt");
+            using var reader = File.OpenText($"input\\input{postfix}{this.day:00}.txt");
             string line;
             while ((line = reader.ReadLine()) != null)
             {

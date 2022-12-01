@@ -5,6 +5,9 @@
     <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
+    <None Update="input2021\**\*.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="input\**\*.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
