@@ -13,51 +13,18 @@ namespace Aoc.y2022
         {
         }
 
-        private Grid<int> GetInput()
-        {
-            var all = GetInputLines(false).ToList();
-            var grid = new Grid<int>(all[0].Length, all.Count);
-            var y = 0;
-            foreach (var line in all)
-            {
-                var x = 0;
-                foreach (var c in line)
-                {
-                    grid[x, y] = c - '0';
-                    ++x;
-                }
-                ++y;
-            }
-            return grid;
-        }
+        private Grid<int> GetInput() => Grid<int>.FromLines(GetInputLines(false).ToList(), c => c - '0');
 
         private void Iterate(Grid<int> grid, Action reset, Action<int, int> callback)
         {
-            for (var y = 0; y < grid.Height; ++y)
+            foreach(var slice in 
+                grid.Rows()
+                .Concat(grid.Columns())
+                .Concat(grid.Rows().Select(r => r.Invert()))
+                .Concat(grid.Columns().Select(c => c.Invert())))
             {
                 reset();
-                for (var x = 0; x < grid.Width; ++x)
-                {
-                    callback(x, y);
-                }
-
-                reset();
-                for (var x = grid.Width - 1; x >= 0; --x)
-                {
-                    callback(x, y);
-                }
-            }
-
-            for (var x = 0; x < grid.Width; ++x)
-            {
-                reset();
-                for (var y = 0; y < grid.Height; ++y)
-                {
-                    callback(x, y);
-                }
-
-                reset();
-                for (var y = grid.Height - 1; y >= 0; --y)
+                foreach (var (x, y) in slice.Indexes)
                 {
                     callback(x, y);
                 }
