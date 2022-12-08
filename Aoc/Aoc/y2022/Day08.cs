@@ -24,10 +24,7 @@ namespace Aoc.y2022
                 .Concat(grid.Columns().Select(c => c.Invert())))
             {
                 reset();
-                foreach (var (x, y) in slice.Indexes)
-                {
-                    callback(x, y);
-                }
+                slice.Apply(callback);
             }
         }
 

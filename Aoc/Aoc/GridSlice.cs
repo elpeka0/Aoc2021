@@ -25,15 +25,19 @@ namespace Aoc
             this.startX = startX;
             this.startY = startY;
         }
-
-        public IEnumerable<(int X, int Y)> Indexes
+        public void Apply(Action<int, int> operation)
         {
-            get
+            foreach (var (x, y) in this.Indexes())
             {
-                for (var i = 0; i < count; ++i)
-                {
-                    yield return (startX + i*incrementX, startY + i*incrementY);
-                }
+                operation(x, y);
+            }
+        }
+
+        public IEnumerable<(int X, int Y)> Indexes()
+        {
+            for (var i = 0; i < count; ++i)
+            {
+                yield return (startX + i*incrementX, startY + i*incrementY);
             }
         }
 
@@ -49,7 +53,7 @@ namespace Aoc
 
         public IEnumerator<T> GetEnumerator()
         {
-            return Indexes.Select(i => grid[i.X, i.Y]).GetEnumerator();
+            return Indexes().Select(i => grid[i.X, i.Y]).GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
