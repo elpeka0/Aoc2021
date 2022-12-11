@@ -10,9 +10,9 @@ namespace Aoc.y2022
     {
         private class Monkey
         {
-            public List<int> Items { get; } = new List<int>();
+            public List<long> Items { get; } = new List<long>();
 
-            public Func<int, int> Transformer { get; set; }
+            public Func<long, long> Transformer { get; set; }
 
             public int Divisor { get; set; }
 
@@ -20,11 +20,14 @@ namespace Aoc.y2022
 
             public Monkey FalseMonkey { get; set; }
 
-            public int Counter { get; set; }
+            public long Counter { get; set; }
 
-            public void ThrowStuff()
+            public void ThrowStuff(int modulus)
             {
-                foreach (var g in Items.Select(Transformer).GroupBy(i => i % Divisor == 0 ? TrueMonkey : FalseMonkey))
+                foreach (var g in Items
+                    .Select(Transformer)
+                    .Select(n => n % modulus)
+                    .GroupBy(i => i % Divisor == 0 ? TrueMonkey : FalseMonkey))
                 {
                     g.Key.Items.AddRange(g);
                 }
@@ -37,7 +40,7 @@ namespace Aoc.y2022
         {
         }
 
-        private List<Monkey> GetInput()
+        private List<Monkey> GetInput(int divide)
         {
             var res = new List<Monkey>();
             Monkey GetMonkey(int nr)
@@ -52,15 +55,15 @@ namespace Aoc.y2022
                 var nr = int.Parse(lines[mcnt].Split()[1].Replace(":", ""));
                 var monkey = GetMonkey(nr);
                 string GetMeat(int lnr) => lines[mcnt + lnr + 1].Split(": ")[1];
-                monkey.Items.AddRange(GetMeat(0).Split(", ").Select(int.Parse));
+                monkey.Items.AddRange(GetMeat(0).Split(", ").Select(long.Parse));
                 var math = GetMeat(1).Split();
-                int Arg(int n) => math[4] == "old" ? n : int.Parse(math[4]);
+                long Arg(long n) => math[4] == "old" ? n : int.Parse(math[4]);
                 monkey.Transformer = n => (math[3] switch
                 {
                     "+" => n + Arg(n),
                     "*" => n * Arg(n),
                     _ => throw new InvalidOperationException("Op " + math[3])
-                })/3;
+                })/divide;
                 monkey.Divisor = int.Parse(GetMeat(2).Split().Last());
                 monkey.TrueMonkey = GetMonkey(int.Parse(GetMeat(3).Split().Last()));
                 monkey.FalseMonkey = GetMonkey(int.Parse(GetMeat(4).Split().Last()));
@@ -69,23 +72,30 @@ namespace Aoc.y2022
             return res;
         }
 
-        public override void Solve()
+        private void SolveInternal(int divide, int rounds)
         {
-            var monkeys = GetInput();
-            for (int i = 0; i < 20; ++i)
+            var monkeys = GetInput(divide);
+            var modulus = monkeys.Aggregate(1, (a, b) => a * b.Divisor);
+
+            for (int i = 0; i < rounds; ++i)
             {
                 foreach (var monkey in monkeys)
                 {
-                    monkey.ThrowStuff();
+                    monkey.ThrowStuff(modulus);
                 }
             }
             var ordered = monkeys.OrderByDescending(m => m.Counter).ToList();
             Console.WriteLine(ordered[0].Counter * ordered[1].Counter);
         }
 
+        public override void Solve()
+        {
+            SolveInternal(3, 20);
+        }
+
         public override void SolveMain()
         {
-            throw new NotImplementedException();
+            SolveInternal(1, 10000);
         }
     }
 }
