@@ -96,6 +96,63 @@ namespace Aoc.y2022
             return best;
         }
 
+        private record Step(Valve Valve, int Distance, string Who, bool Done);
+
+        private (int, string) Best2(int time, int value, Step alpha, Step beta, Dictionary<Valve, Dictionary<Valve, int>> shortest, HashSet<Valve> opened)
+        {
+            if (time == 0 || opened.Count == shortest.Count)
+            {
+                return (value, string.Empty);
+            }
+
+            opened.Add(alpha.Valve);
+            time -= alpha.Distance;
+            beta = beta with { Distance = beta.Distance - alpha.Distance };
+            if (alpha.Valve.Rate > 0)
+            {
+                value += time * alpha.Valve.Rate;
+            }
+
+            var best = value;
+            var bestOp = string.Empty;
+            var found = false;
+            foreach (var key in shortest.Keys.Where(k => !opened.Contains(k) && beta.Valve != k))
+            {
+                var c = shortest[alpha.Valve][key] + 1;
+                if (c < time)
+                {
+                    found = true;
+                    var o = opened.ToHashSet();
+                    var newAlpha = new Step(key, c, alpha.Who, false);
+                    var newBeta = beta;
+                    if (newBeta.Distance < newAlpha.Distance)
+                    {
+                        (newAlpha, newBeta) = (newBeta, newAlpha);
+                    }
+
+                    var (next, op) = Best2(time, value, newAlpha, newBeta, shortest, o);
+                    if (next > best)
+                    {
+                        best = next;
+                        //bestOp = $"{alpha.Who} to {alpha.Valve.Name} @ {26 - time}. {op}";
+                    }
+                }
+            }
+
+            if (!found && !beta.Done)
+            {
+                var o = opened.ToHashSet();
+                var (next, op) = Best2(time, value, beta, alpha with { Distance = 10000, Done = true }, shortest, o);
+                if (next > best)
+                {
+                    best = next;
+                    //bestOp = $"{alpha.Who} to {alpha.Valve.Name} @ {time}. {op}";
+                }
+            }
+
+            return (best, bestOp);
+        }
+
         private Dictionary<Valve, int> ShortestPath(Valve start, IEnumerable<Valve> valves)
         {
             var unvisited = valves.ToHashSet();
@@ -165,7 +222,15 @@ namespace Aoc.y2022
 
         public override void SolveMain()
         {
-            throw new NotImplementedException();
+            var all = GetInput();
+            var start = all["AA"];
+            Optimize(all);
+
+            var shortest = all.Values.ToDictionary(v => v, v => ShortestPath(v, all.Values));
+            shortest[start] = ShortestPath(start, all.Values);
+            var (best, op) = Best2(26, 0, new Step(start, 0, "Human", false), new Step(start, 0, "Elephant", false), shortest, new HashSet<Valve>());
+            Console.WriteLine(op);
+            Console.WriteLine(best);
         }
     }
 }
