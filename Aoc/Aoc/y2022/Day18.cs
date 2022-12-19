@@ -81,6 +81,7 @@ namespace Aoc.y2022
                 while (true)
                 {
                     var gust = wind[widx % wind.Count];
+                    Console.WriteLine(gust);
                     ++widx;
                     var conflict = false;
                     var offx = gust == '<' ? -1 : 1;
