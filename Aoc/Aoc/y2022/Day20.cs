@@ -13,19 +13,6 @@ namespace Aoc.y2022
             public Node Prev { get; set; }
             public Node Next { get; set; }
             public long Value { get; set; }
-
-            public override string ToString()
-            {
-                var sb = new StringBuilder();
-                var p = this;
-                do
-                {
-                    sb.Append(p.Value);
-                    sb.Append(" ");
-                    p = p.Next;
-                } while (p != this);
-                return sb.ToString();
-            }
         }
 
         private Node Remove(Node node)
@@ -34,36 +21,21 @@ namespace Aoc.y2022
             return node.Prev;
         }
 
-        private Node AddAfter(Node prev, long value)
+        private Node AddAfter(Node prev, Node node)
         {
             if (prev == null)
             {
-                var node = new Node
-                {
-                    Value = value
-                };
-                node.Prev = node.Next = node;
-                return node;
+                node.Next = node.Prev = node;
             }
             else
             {
-                var node = new Node
-                {
-                    Prev = prev,
-                    Next = prev.Next,
-                    Value = value
-                };
+                (node.Next, node.Prev) = (prev.Next, prev);
                 (prev.Next, prev.Next.Prev) = (node, node);
-                return node;
             }
-        }
-
-        private Node AddAfter(Node prev, Node node)
-        {
-            (node.Next, node.Prev) = (prev.Next, prev);
-            (prev.Next, prev.Next.Prev) = (node, node);
             return node;
         }
+
+        private Node AddAfter(Node prev, long value) => AddAfter(prev, new Node { Value = value });
 
         private Node Advance(Node p, long n)
         {
@@ -113,13 +85,14 @@ namespace Aoc.y2022
         private long FindAnswer(Node p)
         {
             p = Find(p, 0);
+
             var res = 0L;
-            p = Advance(p, 1000);
-            res += p.Value;
-            p = Advance(p, 1000);
-            res += p.Value;
-            p = Advance(p, 1000);
-            res += p.Value;
+            for (var i = 0; i < 3; ++i)
+            {
+                p = Advance(p, 1000);
+                res += p.Value;
+            }
+
             return res;
         }
 
