@@ -8,97 +8,133 @@ namespace Aoc.y2022
 {
     public class Day17 : DayBase
     {
+        private IEnumerable<char> GetInput() => GetInputLines(false).First();
+
         public Day17() : base(17)
         {
         }
 
-        private IEnumerable<Vector> GetInput()
+        private Grid<char>[] GetTetris()
         {
-            foreach (var line in GetInputLines(false))
-            {
-                var coords = line.Split(',');
-                yield return new Vector(int.Parse(coords[0]), int.Parse(coords[1]), int.Parse(coords[2]));
-            }
+            var tetris = new Grid<char>[5];
+            tetris[0] = new Grid<char>(4, 1);
+            tetris[0].Fill('#');
+            tetris[1] = new Grid<char>(3, 3);
+            tetris[1].Fill('#');
+            tetris[1][0, 0] = '.';
+            tetris[1][0, 2] = '.';
+            tetris[1][2, 0] = '.';
+            tetris[1][2, 2] = '.';
+            tetris[2] = new Grid<char>(3, 3);
+            tetris[2].Fill('#');
+            tetris[2][0, 0] = '.';
+            tetris[2][0, 1] = '.';
+            tetris[2][1, 0] = '.';
+            tetris[2][1, 1] = '.';
+            tetris[3] = new Grid<char>(1, 4);
+            tetris[3].Fill('#');
+            tetris[4] = new Grid<char>(2, 2);
+            tetris[4].Fill('#');
+            return tetris;
         }
 
-        private Vector[] unity = new[]
+        private string Visualize(List<char[]> field, Grid<char> shape, int x, int y)
         {
-                new Vector(-1, 0, 0),
-                new Vector(1, 0, 0),
-                new Vector(0, 1, 0),
-                new Vector(0, -1, 0),
-                new Vector(0, 0, 1),
-                new Vector(0, 0, -1)
-        };
+            var copy = field.Select(l => l.ToArray()).ToList();
+
+            if (shape != null)
+            {
+                foreach (var p in shape.Indexes())
+                {
+                    copy[y - p.Y][x + p.X] = shape[p.X, p.Y] == '#' ? '@' : '.';
+                }
+            }
+            
+            return string.Join(Environment.NewLine, copy.Select(l => new string(l)).Reverse());
+        }
 
         public override void Solve()
         {
-            var cubes = GetInput().ToHashSet();
+            var field = new List<char[]>();
+            field.Add(new char[9]);
+            Array.Fill(field[0], '#');
+            var tetris = GetTetris();
+            var wind = GetInput().ToList();
+            var widx = 0;
+            var top = 1;
 
-            var res = 0;
-            foreach (var cube in cubes)
+            for (var i = 0; i < 2022; ++i)
             {
-                res += unity.Count(u => !cubes.Contains(cube + u));
+                var shape = tetris[i % tetris.Length];
+
+                while (top + 10 > field.Count)
+                {
+                    field.Add(new char[9]);
+                    Array.Fill(field[field.Count - 1], '.');
+                    field[field.Count - 1][0] = '#';
+                    field[field.Count - 1][8] = '#';
+                }
+
+                var x = 3;
+                var y = top + 3 + shape.Height - 1;
+
+                while (true)
+                {
+                    var gust = wind[widx % wind.Count];
+                    Console.WriteLine(gust);
+                    ++widx;
+                    var conflict = false;
+                    var offx = gust == '<' ? -1 : 1;
+                    foreach (var p in shape.Column(0).Indexes())
+                    {
+                        var cx = x + p.X + offx;
+                        var cy = y - p.Y;
+                        if (field[cy][cx] == '#')
+                        {
+                            conflict = true;
+                        }
+                    }
+                    foreach (var p in shape.Column(shape.Width - 1).Indexes())
+                    {
+                        var cx = x + p.X + offx;
+                        var cy = y - p.Y;
+                        if (field[cy][cx] == '#')
+                        {
+                            conflict = true;
+                        }
+                    }
+                    if (!conflict)
+                    {
+                        x += offx;
+                    }
+                    conflict = false;
+                    foreach (var p in shape.Row(shape.Height - 1).Indexes())
+                    {
+                        var cx = x + p.X;
+                        var cy = y - p.Y - 1;
+                        if (field[cy][cx] == '#')
+                        {
+                            conflict = true;
+                        }
+                    }
+                    if (conflict)
+                    {
+                        break;
+                    }
+                    --y;
+                }
+                foreach (var p in shape.Indexes())
+                {
+                    field[y - p.Y][x + p.X] = shape[p.X, p.Y];
+                }
+                top = Math.Max(top, y + 1);
             }
-            Console.WriteLine(res);
+            Console.WriteLine(top - 1);
         }
 
         public override void SolveMain()
         {
-            var cubes = GetInput().ToDictionary(c => c, c => 1000);
-            var xmin = cubes.Keys.Min(c => c.X);
-            var xmax = cubes.Keys.Max(c => c.X);
-            var ymin = cubes.Keys.Min(c => c.Y);
-            var ymax = cubes.Keys.Max(c => c.Y);
-            var zmin = cubes.Keys.Min(c => c.Z);
-            var zmax = cubes.Keys.Max(c => c.Z);
-
-            for (var x = xmin; x <= xmax; x++)
-            {
-                for (var y = ymin; y <= ymax; y++)
-                {
-                    for (var z = zmin; z <= zmax; z++)
-                    {
-                        if (!cubes.ContainsKey(new Vector(x, y, z)))
-                        {
-                            cubes[new Vector(x, y, z)] = 0;
-                        }
-                    }
-                }
-            }
-
-            var effective = true;
-            while (effective)
-            {
-                effective = false;
-                foreach (var c in cubes.ToDictionary(kv => kv.Key, kv => kv.Value))
-                {
-                    foreach (var u in unity)
-                    {
-                        var t = c.Key + u;
-                        if (c.Value == 0)
-                        {
-                            if (t.X < xmin || t.X > xmax || t.Y < ymin || t.Y > ymax || t.Z < zmin || t.Z > zmax)
-                            {
-                                cubes[c.Key] = 1;
-                                effective = true;
-                            }
-                            else if (cubes[t] == 1)
-                            {
-                                cubes[c.Key] = 1;
-                                effective = true;
-                            }
-                        }
-                    }
-                }
-            }
-
-            var res = 0;
-            foreach (var cube in cubes)
-            {
-                res += unity.Count(u => cube.Value == 1000 && (!cubes.TryGetValue(cube.Key + u, out var v) || v == 1));
-            }
-            Console.WriteLine(res);
+            throw new NotImplementedException();
         }
     }
 }
