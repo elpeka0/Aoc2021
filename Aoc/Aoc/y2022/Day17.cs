@@ -81,24 +81,14 @@ namespace Aoc.y2022
                 while (true)
                 {
                     var gust = wind[widx % wind.Count];
-                    Console.WriteLine(gust);
                     ++widx;
                     var conflict = false;
                     var offx = gust == '<' ? -1 : 1;
-                    foreach (var p in shape.Column(0).Indexes())
+                    foreach (var p in shape.Indexes())
                     {
                         var cx = x + p.X + offx;
                         var cy = y - p.Y;
-                        if (field[cy][cx] == '#')
-                        {
-                            conflict = true;
-                        }
-                    }
-                    foreach (var p in shape.Column(shape.Width - 1).Indexes())
-                    {
-                        var cx = x + p.X + offx;
-                        var cy = y - p.Y;
-                        if (field[cy][cx] == '#')
+                        if (field[cy][cx] == '#' && shape[p.X,p.Y] == '#')
                         {
                             conflict = true;
                         }
@@ -108,11 +98,11 @@ namespace Aoc.y2022
                         x += offx;
                     }
                     conflict = false;
-                    foreach (var p in shape.Row(shape.Height - 1).Indexes())
+                    foreach (var p in shape.Indexes())
                     {
                         var cx = x + p.X;
                         var cy = y - p.Y - 1;
-                        if (field[cy][cx] == '#')
+                        if (field[cy][cx] == '#' && shape[p.X, p.Y] == '#')
                         {
                             conflict = true;
                         }
@@ -129,6 +119,8 @@ namespace Aoc.y2022
                 }
                 top = Math.Max(top, y + 1);
             }
+
+            Console.WriteLine(Visualize(field, null, 0, 0));
             Console.WriteLine(top - 1);
         }
 
