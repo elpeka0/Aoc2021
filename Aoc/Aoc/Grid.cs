@@ -136,7 +136,7 @@ namespace Aoc
 
         public static Grid<T> FromLines(List<string> lines, Func<char, T> selector)
         {
-            var grid = new Grid<T>(lines[0].Length, lines.Count);
+            var grid = new Grid<T>(lines.Max(l => l.Length), lines.Count);
             var y = 0;
             foreach (var line in lines)
             {
