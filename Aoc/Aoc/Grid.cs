@@ -115,5 +115,40 @@ namespace Aoc
 
             return sb.ToString();
         }
+
+        public GridSlice<T> Row(int y) => new GridSlice<T>(this, 1, 0, Width, 0, y);
+        public GridSlice<T> Column(int x) => new GridSlice<T>(this, 0, 1, Height, x, 0);
+
+        public IEnumerable<GridSlice<T>> Rows()
+        {
+            for (int y = 0; y < Height; ++y)
+            {
+                yield return Row(y);
+            }
+        }
+        public IEnumerable<GridSlice<T>> Columns()
+        {
+            for (int x = 0; x < Width; ++x)
+            {
+                yield return Column(x);
+            }
+        }
+
+        public static Grid<T> FromLines(List<string> lines, Func<char, T> selector)
+        {
+            var grid = new Grid<T>(lines.Max(l => l.Length), lines.Count);
+            var y = 0;
+            foreach (var line in lines)
+            {
+                var x = 0;
+                foreach (var c in line)
+                {
+                    grid[x, y] = selector(c);
+                    ++x;
+                }
+                ++y;
+            }
+            return grid;
+        }
     }
 }

@@ -45,6 +45,16 @@ namespace Aoc
             return obj is Vector v && this.Equals(v);
         }
 
+        public static bool operator ==(Vector a, Vector b)
+        {
+            return a.Equals(b);
+        }
+
+        public static bool operator !=(Vector a, Vector b)
+        {
+            return !a.Equals(b);
+        }
+
         public override int GetHashCode()
         {
             return HashCode.Combine(this.X, this.Y, this.Z);
@@ -58,6 +68,16 @@ namespace Aoc
         public static Vector operator -(Vector a, Vector b)
         {
             return new Vector(a.X - b.X, a.Y - b.Y, a.Z - b.Z);
+        }
+
+        public static Vector operator *(Vector a, int scalar)
+        {
+            return a.Scale(new Vector(scalar, scalar, scalar));
+        }
+
+        public static Vector operator *(int scalar, Vector a)
+        {
+            return a.Scale(new Vector(scalar, scalar, scalar));
         }
 
         public override string ToString()
