@@ -137,25 +137,43 @@ namespace Aoc.y2022
 
         private IEnumerable<Rule> Sample()
         {
-            yield return new Rule(2, 0, new Vector(1, 0, 0), new Vector(0, -1, 0), new Vector(0, 0, 0), new Vector(0, 1, 0));
-            yield return new Rule(0, 1, new Vector(-1, 0, 0), new Vector(0, 0, 0), new Vector(0, 1, 0), new Vector(1, 1, 0));
-            yield return new Rule(1, 1, new Vector(0, 0, 0), new Vector(-1, 0, 0), new Vector(0, 1, 0), new Vector(0, 1, 0));
-            yield return new Rule(2, 1, new Vector(1, 0, 0), new Vector(0, 0, 0), new Vector(0, 1, 0), new Vector(0, 0, 0));
-            yield return new Rule(2, 2, new Vector(1, 0, 0), new Vector(0, 1, 0), new Vector(0, 0, 0), new Vector(0, 1, 1));
-            yield return new Rule(3, 2, new Vector(0, 0, 0), new Vector(0, 1, 0), new Vector(-1, 0, 0), new Vector(1, 0, 1));
+            yield return new Rule(2, 0, new Vector(1, 0, 0), new Vector(0, 0, 0), new Vector(0, -1, 0), new Vector(0, 1, 1));
+            yield return new Rule(0, 1, new Vector(-1, 0, 0), new Vector(0, -1, 0), new Vector(0, 0, 0), new Vector(1, 1, 1));
+            yield return new Rule(1, 1, new Vector(0, 0, 0), new Vector(0, -1, 0), new Vector(-1, 0, 0), new Vector(0, 1, 1));
+            yield return new Rule(2, 1, new Vector(1, 0, 0), new Vector(0, -1, 0), new Vector(0, 0, 0), new Vector(0, 1, 0));
+            yield return new Rule(2, 2, new Vector(1, 0, 0), new Vector(0, 0, 0), new Vector(0, 1, 0), new Vector(0, 0, 0));
+            yield return new Rule(3, 2, new Vector(0, 0, 0), new Vector(1, 0, 0), new Vector(0, 1, 0), new Vector(1, 0, 0));
         }
         private IEnumerable<Rule> Actual()
         {
-            yield break;
+            yield return new Rule(1, 0, new Vector(1, 0, 0), new Vector(0, 0, 0), new Vector(0, -1, 0), new Vector(0, 1, 1));
+            yield return new Rule(2, 0, new Vector(0, 0, 0), new Vector(-1, 0, 0), new Vector(0, 1, 0), new Vector(1, 1, 0));
+            yield return new Rule(1, 1, new Vector(1, 0, 0), new Vector(0, -1, 0), new Vector(0, 0, 0), new Vector(0, 1, 0));
+            yield return new Rule(0, 2, new Vector(0, 0, 0), new Vector(-1, 0, 0), new Vector(0, 1, 0), new Vector(0, 1, 0));
+            yield return new Rule(1, 2, new Vector(1, 0, 0), new Vector(0, 0, 0), new Vector(0, -1, 0), new Vector(0, 0, 1));
+            yield return new Rule(0, 3, new Vector(0, 1, 0), new Vector(-1, 0, 0), new Vector(0, 0, 0), new Vector(0, 1, 1));
         }
 
         private record CubeCell(char C, List<(int X, int Y)> Coords)
         {
+            private static Dictionary<(int, int), int> lookup = new Dictionary<(int, int), int>();
+
             public override string ToString()
             {
-                var c = string.Join(':', Coords.Select(c => c.X.ToString().PadRight(2) + "," + c.Y.ToString().PadRight(2)));
-                c = c.PadRight(17);
-                return $"[{C} {c}]";
+                if (Coords.Count == 0)
+                {
+                    return "  ";
+                }
+
+                if (!lookup.ContainsKey(Coords[0]))
+                {
+                    var n = lookup.Count + 1;
+                    foreach (var c in Coords)
+                    {
+                        lookup[c] = n;
+                    }
+                }
+                return lookup[Coords[0]].ToString().PadRight(5);
             }
         }
 
@@ -277,7 +295,7 @@ namespace Aoc.y2022
             {
                 position = Move2(position, instruction, cube);
             }
-            var v = 1000 * position.Y + 4 * position.X + position.Facing;
+            var v = 1000 * (position.Y + 1) + 4 * (position.X + 1) + position.Facing;
             Console.WriteLine(v);
         }
     }
