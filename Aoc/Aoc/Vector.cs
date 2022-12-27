@@ -16,6 +16,11 @@ namespace Aoc
             this.Z = z;
         }
 
+        public Vector(int x, int y)
+            : this(x, y, 0)
+        {
+        }
+
         public Vector Reorient(int permutation)
         {
             switch (permutation)

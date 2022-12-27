@@ -133,36 +133,51 @@ namespace Aoc.y2022
             Console.WriteLine(v);
         }
 
-        private record Rule(int X, int Y, Vector XM, Vector YM, Vector ZM, Vector A);
+        private record Rule(Vector P, TransformMatrix M);
 
-        private IEnumerable<Rule> Sample()
+        private IEnumerable<Rule> Sample(int len)
         {
-            yield return new Rule(2, 0, new Vector(1, 0, 0), new Vector(0, 0, 0), new Vector(0, -1, 0), new Vector(0, 1, 1));
-            yield return new Rule(0, 1, new Vector(-1, 0, 0), new Vector(0, -1, 0), new Vector(0, 0, 0), new Vector(1, 1, 1));
-            yield return new Rule(1, 1, new Vector(0, 0, 0), new Vector(0, -1, 0), new Vector(-1, 0, 0), new Vector(0, 1, 1));
-            yield return new Rule(2, 1, new Vector(1, 0, 0), new Vector(0, -1, 0), new Vector(0, 0, 0), new Vector(0, 1, 0));
-            yield return new Rule(2, 2, new Vector(1, 0, 0), new Vector(0, 0, 0), new Vector(0, 1, 0), new Vector(0, 0, 0));
-            yield return new Rule(3, 2, new Vector(0, 0, 0), new Vector(1, 0, 0), new Vector(0, 1, 0), new Vector(1, 0, 0));
-        }
-        private IEnumerable<Rule> Actual()
-        {
-            yield return new Rule(1, 0, new Vector(1, 0, 0), new Vector(0, 0, 0), new Vector(0, -1, 0), new Vector(0, 1, 1));
-            yield return new Rule(2, 0, new Vector(0, 0, 0), new Vector(-1, 0, 0), new Vector(0, 1, 0), new Vector(1, 1, 0));
-            yield return new Rule(1, 1, new Vector(1, 0, 0), new Vector(0, -1, 0), new Vector(0, 0, 0), new Vector(0, 1, 0));
-            yield return new Rule(0, 2, new Vector(0, 0, 0), new Vector(-1, 0, 0), new Vector(0, 1, 0), new Vector(0, 1, 0));
-            yield return new Rule(1, 2, new Vector(1, 0, 0), new Vector(0, 0, 0), new Vector(0, -1, 0), new Vector(0, 0, 1));
-            yield return new Rule(0, 3, new Vector(0, 1, 0), new Vector(-1, 0, 0), new Vector(0, 0, 0), new Vector(0, 1, 1));
+            yield return new Rule(new Vector(2 * len, 0), new TransformMatrix(
+                1, 0, 0, 0,
+                0, 0, 0, len - 1,
+                0, -1, 0, len - 1));
+
+            yield return new Rule(new Vector(0, len), new TransformMatrix(
+                -1, 0, 0, len - 1,
+                0, -1, 0, len - 1,
+                0, 0, 0, len - 1));
+
+            yield return new Rule(new Vector(len, len), new TransformMatrix(
+                0, 0, 0, 0,
+                0, -1, 0, len - 1,
+                -1, 0, 0, len - 1));
+
+            yield return new Rule(new Vector(2 * len, len), new TransformMatrix(
+                1, 0, 0, 0,
+                0, -1, 0, len - 1,
+                0, 0, 0, 0));
+
+            yield return new Rule(new Vector(2 * len, 2 * len), new TransformMatrix(
+                1, 0, 0, 0, 
+                0, 0, 0, 0,
+                0, 1, 0, 0));
+
+            yield return new Rule(new Vector(3 * len, 2 * len), new TransformMatrix(
+                0, 0, 0, len - 1,
+                1, 0, 0, 0,
+                0, 1, 0, 0));
         }
 
-        private record CubeCell(char C, List<(int X, int Y)> Coords)
+        private record CubeCell(char C, List<Vector> Coords)
         {
-            private static Dictionary<(int, int), int> lookup = new Dictionary<(int, int), int>();
+            private static Dictionary<Vector, int> lookup = new Dictionary<Vector, int>();
 
             public override string ToString()
             {
+                const int padding = 5;
                 if (Coords.Count == 0)
                 {
-                    return "  ";
+                    return string.Empty.PadRight(padding);
                 }
 
                 if (!lookup.ContainsKey(Coords[0]))
@@ -173,7 +188,7 @@ namespace Aoc.y2022
                         lookup[c] = n;
                     }
                 }
-                return lookup[Coords[0]].ToString().PadRight(5);
+                return lookup[Coords[0]].ToString().PadRight(padding);
             }
         }
 
@@ -181,32 +196,28 @@ namespace Aoc.y2022
         {
             var len = (int) Math.Sqrt(grid.Count(c => c != ' ') / 6);
             var res = new Grid<CubeCell>(grid.Width, grid.Height);
-            res.Fill(new CubeCell(' ', new List<(int X, int Y)>()));
-            var rules = len == 4 ? Sample() : Actual();
+            res.Fill(new CubeCell(' ', new List<Vector>()));
+            var rules = Sample(len);
 
-            var map = new Dictionary<(int, int, int), List<(int, int)>>();
+            var map = new Dictionary<Vector, List<Vector>>();
 
             foreach (var rule in rules)
             {
-                var px = rule.X * len;
-                var py = rule.Y * len;
                 for (var x = 0; x < len; x++)
                 {
                     for (var y = 0; y < len; y++)
                     {
-                        int Mul(Vector m, int a) => x * m.X + y * m.Y + a * (len - 1);
-                        var tx = Mul(rule.XM, rule.A.X);
-                        var ty = Mul(rule.YM, rule.A.Y);
-                        var tz = Mul(rule.ZM, rule.A.Z);
-
-                        var c = grid[px + x, py + y];
-                        if (!map.TryGetValue((tx, ty, tz), out var l))
+                        var v = new Vector(x, y);
+                        var t = v * rule.M;
+                        var op = rule.P + v;
+                        var c = grid[op.X, op.Y];
+                        if (!map.TryGetValue(t, out var l))
                         {
-                            l = new List<(int, int)>();
-                            map[(tx, ty, tz)] = l;
+                            l = new List<Vector>();
+                            map[t] = l;
                         }
-                        l.Add((px + x, py + y));
-                        res[px + x, py + y] = new CubeCell(c, l);
+                        l.Add(op);
+                        res[op.X, op.Y] = new CubeCell(c, l);
                     }
                 }
             }
@@ -235,7 +246,7 @@ namespace Aoc.y2022
                     throw new InvalidOperationException("Sigh!");
                 }
 
-                var nc = coords.First(x => x != (pos.X, pos.Y));
+                var nc = coords.First(x => x != new Vector(pos.X, pos.Y));
                 newPos = pos with { X = nc.X, Y = nc.Y };
 
                 int t;
