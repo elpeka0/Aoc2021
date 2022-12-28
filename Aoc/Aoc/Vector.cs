@@ -75,6 +75,11 @@ namespace Aoc
             return new Vector(a.X - b.X, a.Y - b.Y, a.Z - b.Z);
         }
 
+        public static Vector operator -(Vector a)
+        {
+            return new Vector(-a.X, -a.Y, -a.Z);
+        }
+
         public static Vector operator *(Vector a, int scalar)
         {
             return a.Scale(new Vector(scalar, scalar, scalar));
@@ -100,6 +105,19 @@ namespace Aoc
             yield return new Vector(-1, 1, -1);
             yield return new Vector(-1, -1, 1);
             yield return new Vector(-1, -1, -1);
+        }
+
+        public void Deconstruct(out int x, out int y)
+        {
+            x = X;
+            y = Y;
+        }
+
+        public void Deconstruct(out int x, out int y, out int z)
+        {
+            x = X;
+            y = Y;
+            z = Z;
         }
     }
 }
