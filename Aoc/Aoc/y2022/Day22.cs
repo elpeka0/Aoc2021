@@ -10,12 +10,12 @@ namespace Aoc.y2022
     {
         private record Instruction(int Move, int Turn);
 
-        private (int X, int Y)[] facing = new (int, int)[]
+        private Vector[] facing = new Vector[]
         {
-            (1, 0),
-            (0, 1),
-            (-1, 0),
-            (0, -1)
+            new Vector(1, 0),
+            new Vector(0, 1),
+            new Vector(-1, 0),
+            new Vector(0, -1)
         };
 
         private record Position(int X, int Y, int Facing);
@@ -133,7 +133,13 @@ namespace Aoc.y2022
             Console.WriteLine(v);
         }
 
-        private record Rule(Vector P, TransformMatrix M);
+        private record Rule(Vector P, TransformMatrix M)
+        {
+            public override string ToString()
+            {
+                return $"{P}\r\n\r\n{M}\r\n";
+            }
+        }
 
         private IEnumerable<Rule> Sample(int len)
         {
@@ -192,12 +198,88 @@ namespace Aoc.y2022
             }
         }
 
+        private TransformMatrix Root(int len) => new TransformMatrix(
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0);
+
+        private IEnumerable<Rule> ComputeMatrix(Grid<char> grid, int len)
+        {
+            int x;
+            for (x = 0; x < grid.Width; x += len)
+            {
+                if (grid[x, 0] != ' ')
+                {
+                    break;
+                }
+            }
+
+            var seen = new HashSet<Vector>();
+            return NextFace(new Vector(x, 0), TransformMatrix.Identity, TransformMatrix.Identity).ToList();
+
+            IEnumerable<Rule> NextFace(Vector p, TransformMatrix transform, TransformMatrix normalTransform)
+            {
+                if (seen.Contains(p)
+                    || p.X < 0
+                    || p.X >= grid.Width
+                    || p.Y < 0
+                    || p.Y >= grid.Height
+                    || grid[p.X, p.Y] == ' ')
+                {
+                    yield break;
+                }
+                seen.Add(p);
+
+                var normal = normalTransform * new Vector(0, 0, -1);
+                var offset = normal switch
+                {
+                    (1, 0, 0) => new Vector(1, 0, 0),
+                    (0, 1, 0) => new Vector(0, 1, 0),
+                    (0, 0, 1) => new Vector(0, 0, 1),
+                    (-1, 0, 0) => new Vector(0, 0, 0), 
+                    (0, -1, 0) => new Vector(0, 0, 0), 
+                    (0, 0, -1) => new Vector(0, 0, 0)
+                };
+                var bend = transform * TransformMatrix.Rotate(new Vector(0, 0, 1), 3);
+                var rbend = transform * TransformMatrix.Rotate(new Vector(0, 0, -1), 1);
+                yield return new Rule(p, TransformMatrix.Translate(offset*(len - 1)) * Root(len) * transform);
+
+                foreach (var f in facing)
+                {
+                    var rotate = TransformMatrix.Rotate(bend * f, 1);
+                    var nrotate = TransformMatrix.Rotate(rbend * f, 1);
+
+                    foreach (var r in NextFace(p + f * len, rotate * transform, nrotate * normalTransform).ToList())
+                    {
+                        yield return r;
+                    }
+                }
+            }
+        }
+
+        private StringBuilder VisualizeTransform(TransformMatrix m)
+        {
+            var sb = new StringBuilder();
+            for (int row = 0; row < 4; ++row)
+            {
+                for (int column = 0; column < 4; ++column)
+                {
+                    sb.Append(m * new Vector(column, row));
+                    sb.Append("  ");
+                }
+                sb.AppendLine();
+            }
+            return sb;
+        }
+
         private Grid<CubeCell> Cubify(Grid<char> grid)
         {
             var len = (int) Math.Sqrt(grid.Count(c => c != ' ') / 6);
             var res = new Grid<CubeCell>(grid.Width, grid.Height);
             res.Fill(new CubeCell(' ', new List<Vector>()));
-            var rules = Sample(len);
+            var rules = ComputeMatrix(grid, len).ToList();
+            Console.WriteLine(string.Join(Environment.NewLine, rules.Select(r => 
+                r.ToString() + Environment.NewLine + Environment.NewLine + VisualizeTransform(r.M))));
 
             var map = new Dictionary<Vector, List<Vector>>();
 
@@ -208,7 +290,7 @@ namespace Aoc.y2022
                     for (var y = 0; y < len; y++)
                     {
                         var v = new Vector(x, y);
-                        var t = v * rule.M;
+                        var t = rule.M * v;
                         var op = rule.P + v;
                         var c = grid[op.X, op.Y];
                         if (!map.TryGetValue(t, out var l))
