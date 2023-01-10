@@ -169,6 +169,11 @@ namespace Aoc
             return new TransformMatrix(res);
         }
 
+        public static TransformMatrix operator -(TransformMatrix a)
+        {
+            return -1 * a;
+        }
+
         public static TransformMatrix operator *(TransformMatrix a, int b)
         {
             var res = new int[4, 4];
@@ -209,7 +214,7 @@ namespace Aoc
                 );
         }
 
-        public static TransformMatrix Rotate(Vector normal, int quarterCircles)
+        public static TransformMatrix Rotate(Vector pos, Vector v, int quarterCircles)
         {
             quarterCircles %= 4;
             if (quarterCircles < 0)
@@ -218,7 +223,7 @@ namespace Aoc
             }
             if (quarterCircles == 3)
             {
-                normal = -normal;
+                v = -v;
                 quarterCircles = 1;
             }
             else if (quarterCircles == 0)
@@ -226,7 +231,7 @@ namespace Aoc
                 return Identity;
             }
             
-            var m = normal switch
+            var m = v switch
             {
                 (1, 0, 0) => new TransformMatrix
                 (
@@ -270,7 +275,7 @@ namespace Aoc
             {
                 return m * m;
             }
-            return m;
+            return Translate(pos) * m * Translate(-pos);
         }
 
         public bool Effective(int row)

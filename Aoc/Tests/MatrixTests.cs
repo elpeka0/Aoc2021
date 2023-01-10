@@ -114,19 +114,26 @@ namespace Tests
         public void RotateWorks()
         {
             var v = new Vector(1, 2, 3);
-            Assert.AreEqual(new Vector(1, -3, 2), TransformMatrix.Rotate(new Vector(1, 0, 0), 1) * v);
-            Assert.AreEqual(new Vector(-3, 2, 1), TransformMatrix.Rotate(new Vector(0, 1, 0), 1) * v);
-            Assert.AreEqual(new Vector(-2, 1, 3), TransformMatrix.Rotate(new Vector(0, 0, 1), 1) * v);
-            Assert.AreEqual(new Vector(1, 3, -2), TransformMatrix.Rotate(new Vector(-1, 0, 0), 1) * v);
-            Assert.AreEqual(new Vector(3, 2, -1), TransformMatrix.Rotate(new Vector(0, -1, 0), 1) * v);
-            Assert.AreEqual(new Vector(2, -1, 3), TransformMatrix.Rotate(new Vector(0, 0, -1), 1) * v);
+            Assert.AreEqual(new Vector(1, -3, 2), TransformMatrix.Rotate(new Vector(), new Vector(1, 0, 0), 1) * v);
+            Assert.AreEqual(new Vector(-3, 2, 1), TransformMatrix.Rotate(new Vector(), new Vector(0, 1, 0), 1) * v);
+            Assert.AreEqual(new Vector(-2, 1, 3), TransformMatrix.Rotate(new Vector(), new Vector(0, 0, 1), 1) * v);
+            Assert.AreEqual(new Vector(1, 3, -2), TransformMatrix.Rotate(new Vector(), new Vector(-1, 0, 0), 1) * v);
+            Assert.AreEqual(new Vector(3, 2, -1), TransformMatrix.Rotate(new Vector(), new Vector(0, -1, 0), 1) * v);
+            Assert.AreEqual(new Vector(2, -1, 3), TransformMatrix.Rotate(new Vector(), new Vector(0, 0, -1), 1) * v);
 
-            Assert.AreEqual(new Vector(1, -2, -3), TransformMatrix.Rotate(new Vector(1, 0, 0), 2) * v);
-            Assert.AreEqual(new Vector(-1, 2, -3), TransformMatrix.Rotate(new Vector(0, 1, 0), 2) * v);
-            Assert.AreEqual(new Vector(-1, -2, 3), TransformMatrix.Rotate(new Vector(0, 0, 1), 2) * v);
-            Assert.AreEqual(new Vector(1, -2, -3), TransformMatrix.Rotate(new Vector(-1, 0, 0), 2) * v);
-            Assert.AreEqual(new Vector(-1, 2, -3), TransformMatrix.Rotate(new Vector(0, -1, 0), 2) * v);
-            Assert.AreEqual(new Vector(-1, -2, 3), TransformMatrix.Rotate(new Vector(0, 0, -1), 2) * v);
+            Assert.AreEqual(new Vector(1, -2, -3), TransformMatrix.Rotate(new Vector(), new Vector(1, 0, 0), 2) * v);
+            Assert.AreEqual(new Vector(-1, 2, -3), TransformMatrix.Rotate(new Vector(), new Vector(0, 1, 0), 2) * v);
+            Assert.AreEqual(new Vector(-1, -2, 3), TransformMatrix.Rotate(new Vector(), new Vector(0, 0, 1), 2) * v);
+            Assert.AreEqual(new Vector(1, -2, -3), TransformMatrix.Rotate(new Vector(), new Vector(-1, 0, 0), 2) * v);
+            Assert.AreEqual(new Vector(-1, 2, -3), TransformMatrix.Rotate(new Vector(), new Vector(0, -1, 0), 2) * v);
+            Assert.AreEqual(new Vector(-1, -2, 3), TransformMatrix.Rotate(new Vector(), new Vector(0, 0, -1), 2) * v);
+        }
+
+        [TestMethod]
+        public void RotateAroundWorks()
+        {
+            var v = new Vector(1, 2, 3);
+            Assert.AreEqual(new Vector(1, 2, 1), TransformMatrix.Rotate(new Vector(4, 3, 2), new Vector(1, 0, 0), 1) * v);
         }
 
         [TestMethod]
@@ -135,7 +142,7 @@ namespace Tests
             var v = new Vector(1, 2, 3);
             Assert.AreEqual(new Vector(-2, -1, 10), 
                 TransformMatrix.Translate(new Vector(2, -3, 4))
-                * TransformMatrix.Rotate(new Vector(0, 0, 1), 1) 
+                * TransformMatrix.Rotate(new Vector(), new Vector(0, 0, 1), 1) 
                 * TransformMatrix.Scale(new Vector(2, 2, 2)) 
                 * v);
         }

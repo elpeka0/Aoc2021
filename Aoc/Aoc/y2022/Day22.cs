@@ -200,24 +200,33 @@ namespace Aoc.y2022
 
         private TransformMatrix Root(int len) => new TransformMatrix(
             1, 0, 0, 0,
-            0, 1, 0, 0,
+            0, -1, 0, len - 1,
             0, 0, 1, 0);
 
         private IEnumerable<Rule> ComputeMatrix(Grid<char> grid, int len)
         {
             int x;
+            var y = len;
             for (x = 0; x < grid.Width; x += len)
             {
-                if (grid[x, 0] != ' ')
+                if (grid[x, y] != ' ')
                 {
                     break;
                 }
             }
 
             var seen = new HashSet<Vector>();
-            return NextFace(new Vector(x, 0), TransformMatrix.Identity, TransformMatrix.Identity).ToList();
+            return NextFace(
+                new Vector(x, y), 
+                TransformMatrix.Identity, 
+                new TransformMatrix(
+                    0, 1, 0, 0,
+                    1, 0, 0, 0,
+                    0, 0, 1, 0
+                    ),
+                TransformMatrix.Identity).ToList();
 
-            IEnumerable<Rule> NextFace(Vector p, TransformMatrix transform, TransformMatrix normalTransform)
+            IEnumerable<Rule> NextFace(Vector p, TransformMatrix transform, TransformMatrix bend, TransformMatrix main)
             {
                 if (seen.Contains(p)
                     || p.X < 0
@@ -230,26 +239,26 @@ namespace Aoc.y2022
                 }
                 seen.Add(p);
 
-                var normal = normalTransform * new Vector(0, 0, -1);
-                var offset = normal switch
-                {
-                    (1, 0, 0) => new Vector(1, 0, 0),
-                    (0, 1, 0) => new Vector(0, 1, 0),
-                    (0, 0, 1) => new Vector(0, 0, 1),
-                    (-1, 0, 0) => new Vector(0, 0, 0), 
-                    (0, -1, 0) => new Vector(0, 0, 0), 
-                    (0, 0, -1) => new Vector(0, 0, 0)
-                };
-                var bend = transform * TransformMatrix.Rotate(new Vector(0, 0, 1), 3);
-                var rbend = transform * TransformMatrix.Rotate(new Vector(0, 0, -1), 1);
-                yield return new Rule(p, TransformMatrix.Translate(offset*(len - 1)) * Root(len) * transform);
+                yield return new Rule(p, transform * Root(len));
 
                 foreach (var f in facing)
                 {
-                    var rotate = TransformMatrix.Rotate(bend * f, 1);
-                    var nrotate = TransformMatrix.Rotate(rbend * f, 1);
+                    var actual = new Vector(f.X, -f.Y);
+                    var fulcrum = actual switch
+                    {
+                        (-1, 0) => new Vector(0, 0),
+                        (0, -1) => new Vector(0, 0),
+                        (0, 1) => new Vector(0, len - 1),
+                        (1, 0) => new Vector(len - 1, 0)
+                    };
+                    fulcrum = transform * fulcrum;
+                    var offset = main * (actual * (len - 1));
+                    var rot = TransformMatrix.Rotate(fulcrum, bend * actual, 1);
+                    var dir = TransformMatrix.Rotate(new Vector(), bend * actual, 1);
+                    var counter = TransformMatrix.Rotate(new Vector(), -bend * actual, 1);
+                    var m = rot * TransformMatrix.Translate(offset);
 
-                    foreach (var r in NextFace(p + f * len, rotate * transform, nrotate * normalTransform).ToList())
+                    foreach (var r in NextFace(p + f * len, m * transform, counter * bend, dir * main).ToList())
                     {
                         yield return r;
                     }
@@ -257,12 +266,12 @@ namespace Aoc.y2022
             }
         }
 
-        private StringBuilder VisualizeTransform(TransformMatrix m)
+        private StringBuilder VisualizeTransform(TransformMatrix m, int len)
         {
             var sb = new StringBuilder();
-            for (int row = 0; row < 4; ++row)
+            for (int row = 0; row < len; ++row)
             {
-                for (int column = 0; column < 4; ++column)
+                for (int column = 0; column < len; ++column)
                 {
                     sb.Append(m * new Vector(column, row));
                     sb.Append("  ");
@@ -279,7 +288,7 @@ namespace Aoc.y2022
             res.Fill(new CubeCell(' ', new List<Vector>()));
             var rules = ComputeMatrix(grid, len).ToList();
             Console.WriteLine(string.Join(Environment.NewLine, rules.Select(r => 
-                r.ToString() + Environment.NewLine + Environment.NewLine + VisualizeTransform(r.M))));
+                r.ToString() + Environment.NewLine + Environment.NewLine + VisualizeTransform(r.M, len))));
 
             var map = new Dictionary<Vector, List<Vector>>();
 
@@ -323,12 +332,14 @@ namespace Aoc.y2022
                     throw new InvalidOperationException("Fuck!");
                 }
 
+                List<Vector> candidates = coords.ToList();
                 if (coords.Count == 3)
                 {
-                    throw new InvalidOperationException("Sigh!");
+                    candidates.Remove(new Vector(pos.X, pos.Y));
+                    //throw new InvalidOperationException("Sigh!");
                 }
 
-                var nc = coords.First(x => x != new Vector(pos.X, pos.Y));
+                var nc = candidates.First(x => x != new Vector(pos.X, pos.Y));
                 newPos = pos with { X = nc.X, Y = nc.Y };
 
                 int t;
