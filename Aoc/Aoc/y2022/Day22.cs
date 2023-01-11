@@ -10,12 +10,11 @@ namespace Aoc.y2022
     {
         private record Instruction(int Move, int Turn);
 
-        private Vector[] facing = new Vector[]
-        {
-            new Vector(1, 0),
-            new Vector(0, 1),
-            new Vector(-1, 0),
-            new Vector(0, -1)
+        private readonly Vector[] facing = {
+            new(1, 0),
+            new(0, 1),
+            new(-1, 0),
+            new(0, -1)
         };
 
         private record Position(int X, int Y, int Facing);
@@ -133,7 +132,7 @@ namespace Aoc.y2022
             Console.WriteLine(v);
         }
 
-        private record Rule(Vector P, TransformMatrix M)
+        private record Rule(Vector P, TransformMatrix M, TransformMatrix N)
         {
             public override string ToString()
             {
@@ -141,40 +140,7 @@ namespace Aoc.y2022
             }
         }
 
-        private IEnumerable<Rule> Sample(int len)
-        {
-            yield return new Rule(new Vector(2 * len, 0), new TransformMatrix(
-                1, 0, 0, 0,
-                0, 0, 0, len - 1,
-                0, -1, 0, len - 1));
-
-            yield return new Rule(new Vector(0, len), new TransformMatrix(
-                -1, 0, 0, len - 1,
-                0, -1, 0, len - 1,
-                0, 0, 0, len - 1));
-
-            yield return new Rule(new Vector(len, len), new TransformMatrix(
-                0, 0, 0, 0,
-                0, -1, 0, len - 1,
-                -1, 0, 0, len - 1));
-
-            yield return new Rule(new Vector(2 * len, len), new TransformMatrix(
-                1, 0, 0, 0,
-                0, -1, 0, len - 1,
-                0, 0, 0, 0));
-
-            yield return new Rule(new Vector(2 * len, 2 * len), new TransformMatrix(
-                1, 0, 0, 0, 
-                0, 0, 0, 0,
-                0, 1, 0, 0));
-
-            yield return new Rule(new Vector(3 * len, 2 * len), new TransformMatrix(
-                0, 0, 0, len - 1,
-                1, 0, 0, 0,
-                0, 1, 0, 0));
-        }
-
-        private record CubeCell(char C, List<Vector> Coords)
+        private record CubeCell(char C, Rule Rule, Dictionary<Vector, Vector> Coords)
         {
             private static Dictionary<Vector, int> lookup = new Dictionary<Vector, int>();
 
@@ -186,22 +152,23 @@ namespace Aoc.y2022
                     return string.Empty.PadRight(padding);
                 }
 
-                if (!lookup.ContainsKey(Coords[0]))
+                if (!lookup.ContainsKey(Coords.Values.First()))
                 {
                     var n = lookup.Count + 1;
-                    foreach (var c in Coords)
+                    foreach (var c in Coords.Values)
                     {
                         lookup[c] = n;
                     }
                 }
-                return lookup[Coords[0]].ToString().PadRight(padding);
+                return lookup[Coords.Values.First()].ToString().PadRight(padding);
             }
         }
-
-        private TransformMatrix Root(int len) => new TransformMatrix(
+        private TransformMatrix Root => new TransformMatrix(
             1, 0, 0, 0,
-            0, -1, 0, len - 1,
+            0, -1, 0, 0,
             0, 0, 1, 0);
+
+        private TransformMatrix TranslatedRoot(int len) => TransformMatrix.Translate(new Vector(0, len - 1, 0)) * Root;
 
         private IEnumerable<Rule> ComputeMatrix(Grid<char> grid, int len)
         {
@@ -239,7 +206,7 @@ namespace Aoc.y2022
                 }
                 seen.Add(p);
 
-                yield return new Rule(p, transform * Root(len));
+                yield return new Rule(p, transform * TranslatedRoot(len), main * Root);
 
                 foreach (var f in facing)
                 {
@@ -285,12 +252,12 @@ namespace Aoc.y2022
         {
             var len = (int) Math.Sqrt(grid.Count(c => c != ' ') / 6);
             var res = new Grid<CubeCell>(grid.Width, grid.Height);
-            res.Fill(new CubeCell(' ', new List<Vector>()));
+            res.Fill(new CubeCell(' ', null, new Dictionary<Vector, Vector>()));
             var rules = ComputeMatrix(grid, len).ToList();
             Console.WriteLine(string.Join(Environment.NewLine, rules.Select(r => 
-                r.ToString() + Environment.NewLine + Environment.NewLine + VisualizeTransform(r.M, len))));
+                r + Environment.NewLine + Environment.NewLine + VisualizeTransform(r.M, len))));
 
-            var map = new Dictionary<Vector, List<Vector>>();
+            var map = new Dictionary<Vector, Dictionary<Vector, Vector>>();
 
             foreach (var rule in rules)
             {
@@ -304,11 +271,12 @@ namespace Aoc.y2022
                         var c = grid[op.X, op.Y];
                         if (!map.TryGetValue(t, out var l))
                         {
-                            l = new List<Vector>();
+                            l = new Dictionary<Vector, Vector>();
                             map[t] = l;
                         }
-                        l.Add(op);
-                        res[op.X, op.Y] = new CubeCell(c, l);
+                        var normal = new Vector(0, 0, -1);
+                        l.Add(rule.N * normal, op);
+                        res[op.X, op.Y] = new CubeCell(c, rule, l);
                     }
                 }
             }
@@ -332,14 +300,7 @@ namespace Aoc.y2022
                     throw new InvalidOperationException("Fuck!");
                 }
 
-                List<Vector> candidates = coords.ToList();
-                if (coords.Count == 3)
-                {
-                    candidates.Remove(new Vector(pos.X, pos.Y));
-                    //throw new InvalidOperationException("Sigh!");
-                }
-
-                var nc = candidates.First(x => x != new Vector(pos.X, pos.Y));
+                var nc = coords[grid[pos.X, pos.Y].Rule.N * f];
                 newPos = pos with { X = nc.X, Y = nc.Y };
 
                 int t;
