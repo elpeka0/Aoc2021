@@ -131,7 +131,10 @@ namespace Aoc.y2022
                 }
                 foreach (var p in shape.Indexes())
                 {
-                    field[pos + p] = shape[p];
+                    if (shape[p] != '.')
+                    {
+                        field[pos + p] = shape[p];
+                    }
                 }
                 field.Top = Math.Max(field.Top, -pos.Y + 1);
             }
