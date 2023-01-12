@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -145,7 +146,108 @@ namespace Aoc.y2022
 
         public override void SolveMain()
         {
-            throw new NotImplementedException();
+            var tetris = GetTetris();
+            var wind = GetInput().ToList();
+            var widx = 0;
+            var field = new Field();
+
+            var cmap = new List<int>();
+
+            for (var i = 0; i < 100000; ++i)
+            {
+                var shape = tetris[i % tetris.Length];
+
+                field.Extend(10);
+                var pos = new Vector(3, -field.Top - 3 - shape.Height + 1);
+
+                while (true)
+                {
+                    var gust = wind[widx % wind.Count];
+                    ++widx;
+                    var offx = gust == '<' ? -1 : 1;
+
+                    var movep = pos + new Vector(offx, 0);
+                    if (!Overlaps(field, shape, movep))
+                    {
+                        pos = movep;
+                    }
+
+                    movep = pos + new Vector(0, 1);
+                    if (Overlaps(field, shape, movep))
+                    {
+                        break;
+                    }
+
+                    pos = movep;
+                }
+
+                foreach (var p in shape.Indexes())
+                {
+                    if (shape[p] != '.')
+                    {
+                        field[pos + p] = shape[p];
+                    }
+                }
+
+                var newTop = Math.Max(field.Top, -pos.Y + 1);
+                cmap.Add(newTop - field.Top);
+                field.Top = newTop;
+            }
+
+            var period = 0;
+            var preamble = 0;
+            for (var i = 0; i < cmap.Count / 2; i++)
+            {
+                var success = false;
+                for (var j = cmap.Count / 2; j > 10; --j)
+                {
+                    success = true;
+                    for (var k = 0; k < j; ++k)
+                    {
+                        if (cmap[k + i] != cmap[i + j + k])
+                        {
+                            success = false;
+                            break;
+                        }
+                    }
+
+                    if (success)
+                    {
+                        period = j;
+                        preamble = i;
+                        break;
+                    }
+                }
+
+                if (success)
+                {
+                    break;
+                }
+            }
+
+            var initial = 0L;
+            var repeating = 0L;
+            var rest = 0L;
+
+            for (var i = 0; i < preamble; ++i)
+            {
+                initial += cmap[i];
+            }
+
+            for (var i = preamble; i < preamble + period; ++i)
+            {
+                repeating += cmap[i];
+            }
+
+            var total = 1000000000000L;
+            var packages = (total - preamble) / period;
+            var rcnt = (total - preamble) % period;
+
+            for (var i = preamble + period; i < preamble + period + rcnt; ++i)
+            {
+                rest += cmap[i];
+            }
+            Console.WriteLine(initial + packages*repeating + rest);
         }
     }
 }
