@@ -58,10 +58,10 @@ namespace Aoc.y2021
             while (any)
             {
                 any = false;
-                var queue = new Queue<(int X, int Y)>();
-                var seen = new HashSet<(int X, int Y)>();
-                var current = (X: 0, Y: 0);
-                seen.Add((0, 0));
+                var queue = new Queue<Vector>();
+                var seen = new HashSet<Vector>();
+                var current = new Vector();
+                seen.Add(current);
                 do
                 {
                     foreach (var point in grid.Neighbors(current.X, current.Y, false))

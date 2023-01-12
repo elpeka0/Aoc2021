@@ -29,7 +29,7 @@ namespace Aoc.y2022
             grid[start.X, start.Y] = 0;
             grid[end.X, end.Y] = 25;
             var queue = new Queue<(int X, int Y, int Count)>();
-            var seen = new HashSet<(int X, int Y)>();
+            var seen = new HashSet<Vector>();
             var initial = backwards ? end : start;
             queue.Enqueue((initial.X, initial.Y, 0));
 
@@ -43,22 +43,22 @@ namespace Aoc.y2022
                     break;
                 }
 
-                bool CanStep((int X, int Y) from)
+                bool CanStep(Vector from)
                 {
                     if (backwards)
                     {
-                        return grid[from.X, from.Y] >= grid[p.X, p.Y] - 1;
+                        return grid[from] >= grid[p.X, p.Y] - 1;
                     }
                     else
                     {
-                        return grid[from.X, from.Y] <= grid[p.X, p.Y] + 1;
+                        return grid[from] <= grid[p.X, p.Y] + 1;
                     }
                 }
 
                 foreach (var n in grid.Neighbors(p.X, p.Y, false).Where(n => !seen.Contains(n) && CanStep(n)))
                 {
                     queue.Enqueue((n.X, n.Y, p.Count + 1));
-                    seen.Add((n.X, n.Y));
+                    seen.Add(n);
                 }
             }
         }

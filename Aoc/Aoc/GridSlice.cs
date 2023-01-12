@@ -10,20 +10,16 @@ namespace Aoc
     public class GridSlice<T> : IEnumerable<T>
     {
         private readonly Grid<T> grid;
-        private readonly int incrementX;
-        private readonly int incrementY;
+        private readonly Vector increment;
         private readonly int count;
-        private readonly int startX;
-        private readonly int startY;
+        private readonly Vector start;
 
-        public GridSlice(Grid<T> grid, int incrementX, int incrementY, int count, int startX, int startY)
+        public GridSlice(Grid<T> grid, Vector increment, int count, Vector start)
         {
             this.grid = grid;
-            this.incrementX = incrementX;
-            this.incrementY = incrementY;
+            this.increment = increment;
             this.count = count;
-            this.startX = startX;
-            this.startY = startY;
+            this.start = start;
         }
         public void Apply(Action<int, int> operation)
         {
@@ -33,20 +29,20 @@ namespace Aoc
             }
         }
 
-        public IEnumerable<(int X, int Y)> Indexes()
+        public IEnumerable<Vector> Indexes()
         {
             for (var i = 0; i < count; ++i)
             {
-                yield return (startX + i*incrementX, startY + i*incrementY);
+                yield return start + i*increment;
             }
         }
 
-        public GridSlice<T> Invert() => new GridSlice<T>(grid, -incrementX, -incrementY, count, startX + incrementX*(count - 1), startY + incrementY*(count - 1));
+        public GridSlice<T> Invert() => new GridSlice<T>(grid, -this.increment, count, start + increment*(count - 1));
 
         public T this[int index]
         {
-            get => grid[startX + index * incrementX, startY + index * incrementY];
-            set => grid[startX + index * incrementX, startY + index * incrementY] = value;
+            get => grid[start + index * increment];
+            set => grid[start + index * increment] = value;
         }
 
         public int Count => count;

@@ -1,4 +1,4 @@
-using Aoc;
+﻿using Aoc;
 
 namespace Tests
 {
@@ -35,7 +35,7 @@ namespace Tests
         public void IndexIterationWorks()
         {
             var grid = new Grid<int>(7, 5);
-            var set = new HashSet<(int, int)>();
+            var set = new HashSet<Vector>();
             foreach (var index in grid.Indexes())
             {
                 Assert.IsFalse(set.Contains(index));
@@ -63,13 +63,13 @@ namespace Tests
             var grid = new Grid<int>(7, 5);
             var n = grid.Neighbors(0, 0, false).ToList();
             Assert.AreEqual(2, n.Count);
-            Assert.IsTrue(n.Contains((0, 1)));
-            Assert.IsTrue(n.Contains((1, 0)));
+            Assert.IsTrue(n.Contains(new (0, 1)));
+            Assert.IsTrue(n.Contains(new(1, 0)));
             n = grid.Neighbors(0, 0, true).ToList();
             Assert.AreEqual(3, n.Count);
-            Assert.IsTrue(n.Contains((0, 1)));
-            Assert.IsTrue(n.Contains((1, 0)));
-            Assert.IsTrue(n.Contains((1, 1)));
+            Assert.IsTrue(n.Contains(new(0, 1)));
+            Assert.IsTrue(n.Contains(new(1, 0)));
+            Assert.IsTrue(n.Contains(new(1, 1)));
         }
 
         [TestMethod]
@@ -78,20 +78,20 @@ namespace Tests
             var grid = new Grid<int>(7, 5);
             var n = grid.Neighbors(3, 2, false).ToList();
             Assert.AreEqual(4, n.Count);
-            Assert.IsTrue(n.Contains((2, 2)));
-            Assert.IsTrue(n.Contains((4, 2)));
-            Assert.IsTrue(n.Contains((3, 1)));
-            Assert.IsTrue(n.Contains((3, 3)));
+            Assert.IsTrue(n.Contains(new(2, 2)));
+            Assert.IsTrue(n.Contains(new (4, 2)));
+            Assert.IsTrue(n.Contains(new (3, 1)));
+            Assert.IsTrue(n.Contains(new (3, 3)));
             n = grid.Neighbors(3, 2, true).ToList();
             Assert.AreEqual(8, n.Count);
-            Assert.IsTrue(n.Contains((2, 2)));
-            Assert.IsTrue(n.Contains((4, 2)));
-            Assert.IsTrue(n.Contains((3, 1)));
-            Assert.IsTrue(n.Contains((3, 3)));
-            Assert.IsTrue(n.Contains((2, 1)));
-            Assert.IsTrue(n.Contains((2, 3)));
-            Assert.IsTrue(n.Contains((4, 1)));
-            Assert.IsTrue(n.Contains((4, 3)));
+            Assert.IsTrue(n.Contains(new(2, 2)));
+            Assert.IsTrue(n.Contains(new (4, 2)));
+            Assert.IsTrue(n.Contains(new (3, 1)));
+            Assert.IsTrue(n.Contains(new (3, 3)));
+            Assert.IsTrue(n.Contains(new (2, 1)));
+            Assert.IsTrue(n.Contains(new (2, 3)));
+            Assert.IsTrue(n.Contains(new (4, 1)));
+            Assert.IsTrue(n.Contains(new (4, 3)));
         }
 
         [TestMethod]

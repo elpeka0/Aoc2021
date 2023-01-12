@@ -26,6 +26,12 @@ namespace Aoc
             set => this.grid[x, y] = value;
         }
 
+        public T this[Vector v] 
+        { 
+            get => this.grid[v.X, v.Y];
+            set => this.grid[v.X, v.Y] = value;
+        }
+
         public void Apply(Action<int, int> operation)
         {
             foreach (var (x, y) in this.Indexes())
@@ -39,49 +45,51 @@ namespace Aoc
             Apply((x, y) => this.grid[x, y] = value);
         }
 
-        public IEnumerable<(int X, int Y)> Indexes()
+        public IEnumerable<Vector> Indexes()
         {
             for (var x = 0; x < Width; ++x)
             {
                 for (var y = 0; y < Height; ++y)
                 {
-                    yield return (x, y);
+                    yield return new(x, y);
                 }
             }
         }
 
-        public IEnumerable<(int X, int Y)> Neighbors(int x, int y, bool diagonal)
+        public IEnumerable<Vector> Neighbors(Vector v, bool diagonal) => Neighbors(v.X, v.Y, diagonal);
+
+        public IEnumerable<Vector> Neighbors(int x, int y, bool diagonal)
         {
             if (x > 0)
             {
-                yield return (x - 1, y);
+                yield return new(x - 1, y);
                 if (y > 0 && diagonal)
                 {
-                    yield return (x - 1, y - 1);
+                    yield return new(x - 1, y - 1);
                 }
                 if (y < Height - 1 && diagonal)
                 {
-                    yield return (x - 1, y + 1);
+                    yield return new(x - 1, y + 1);
                 }
             }
             if (y > 0)
             {
-                yield return (x, y - 1);
+                yield return new(x, y - 1);
             }
             if (y < Height- 1)
             {
-                yield return (x, y + 1);
+                yield return new(x, y + 1);
             }
             if (x < Width - 1)
             {
-                yield return (x + 1, y);
+                yield return new(x + 1, y);
                 if (y > 0 && diagonal)
                 {
-                    yield return (x + 1, y - 1);
+                    yield return new(x + 1, y - 1);
                 }
                 if (y < Height - 1 && diagonal)
                 {
-                    yield return (x + 1, y + 1);
+                    yield return new(x + 1, y + 1);
                 }
             }
         }
@@ -116,8 +124,8 @@ namespace Aoc
             return sb.ToString();
         }
 
-        public GridSlice<T> Row(int y) => new GridSlice<T>(this, 1, 0, Width, 0, y);
-        public GridSlice<T> Column(int x) => new GridSlice<T>(this, 0, 1, Height, x, 0);
+        public GridSlice<T> Row(int y) => new(this, new(1, 0), Width, new(0, y));
+        public GridSlice<T> Column(int x) => new(this, new(0, 1), Height, new(x, 0));
 
         public IEnumerable<GridSlice<T>> Rows()
         {

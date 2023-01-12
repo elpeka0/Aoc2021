@@ -10,6 +10,51 @@ namespace Aoc.y2022
     {
         private IEnumerable<char> GetInput() => GetInputLines(false).First();
 
+        private class Field
+        {
+            private readonly List<char[]> data = new ();
+
+            public Field()
+            {
+                data.Add(new char[9]);
+                Array.Fill(data[0], '#');
+            }
+
+            public int Top { get; set; } = 1;
+
+            public char this[Vector p]
+            {
+                get => this.data[-p.Y][p.X];
+                set => this.data[-p.Y][p.X] = value;
+            }
+
+            public void Extend(int count)
+            {
+                while (Top + count > this.data.Count)
+                {
+                    this.data.Add(new char[9]);
+                    Array.Fill(this.data[^1], '.');
+                    this.data[^1][0] = '#';
+                    this.data[^1][8] = '#';
+                }
+            }
+
+            public string Visualize(Grid<char> shape, Vector pos)
+            {
+                var copy = this.data.Select(l => l.ToArray()).ToList();
+
+                if (shape != null)
+                {
+                    foreach (var p in shape.Indexes())
+                    {
+                        copy[pos.Y - p.Y][pos.X + p.X] = shape[p] == '#' ? '@' : '.';
+                    }
+                }
+
+                return string.Join(Environment.NewLine, copy.Select(l => new string(l)).Reverse());
+            }
+        }
+
         public Day17() : base(17)
         {
         }
@@ -38,90 +83,61 @@ namespace Aoc.y2022
             return tetris;
         }
 
-        private string Visualize(List<char[]> field, Grid<char> shape, int x, int y)
+        private bool Overlaps(Field field, Grid<char> shape, Vector offset)
         {
-            var copy = field.Select(l => l.ToArray()).ToList();
-
-            if (shape != null)
+            foreach (var p in shape.Indexes())
             {
-                foreach (var p in shape.Indexes())
+                if (field[p + offset] == '#' && shape[p] == '#')
                 {
-                    copy[y - p.Y][x + p.X] = shape[p.X, p.Y] == '#' ? '@' : '.';
+                    return true;
                 }
             }
-            
-            return string.Join(Environment.NewLine, copy.Select(l => new string(l)).Reverse());
+
+            return false;
         }
 
         public override void Solve()
         {
-            var field = new List<char[]>();
-            field.Add(new char[9]);
-            Array.Fill(field[0], '#');
             var tetris = GetTetris();
             var wind = GetInput().ToList();
             var widx = 0;
-            var top = 1;
+            var field = new Field();
 
             for (var i = 0; i < 2022; ++i)
             {
                 var shape = tetris[i % tetris.Length];
-
-                while (top + 10 > field.Count)
-                {
-                    field.Add(new char[9]);
-                    Array.Fill(field[field.Count - 1], '.');
-                    field[field.Count - 1][0] = '#';
-                    field[field.Count - 1][8] = '#';
-                }
-
-                var x = 3;
-                var y = top + 3 + shape.Height - 1;
+                
+                field.Extend(10);
+                var pos = new Vector(3, -field.Top - 3 - shape.Height + 1);
 
                 while (true)
                 {
                     var gust = wind[widx % wind.Count];
                     ++widx;
-                    var conflict = false;
                     var offx = gust == '<' ? -1 : 1;
-                    foreach (var p in shape.Indexes())
+
+                    var movep = pos + new Vector(offx, 0);
+                    if (!Overlaps(field, shape, movep))
                     {
-                        var cx = x + p.X + offx;
-                        var cy = y - p.Y;
-                        if (field[cy][cx] == '#' && shape[p.X,p.Y] == '#')
-                        {
-                            conflict = true;
-                        }
+                        pos = movep;
                     }
-                    if (!conflict)
-                    {
-                        x += offx;
-                    }
-                    conflict = false;
-                    foreach (var p in shape.Indexes())
-                    {
-                        var cx = x + p.X;
-                        var cy = y - p.Y - 1;
-                        if (field[cy][cx] == '#' && shape[p.X, p.Y] == '#')
-                        {
-                            conflict = true;
-                        }
-                    }
-                    if (conflict)
+                    
+                    movep = pos + new Vector(0, 1);
+                    if (Overlaps(field, shape, movep))
                     {
                         break;
                     }
-                    --y;
+                    pos = movep;
                 }
                 foreach (var p in shape.Indexes())
                 {
-                    field[y - p.Y][x + p.X] = shape[p.X, p.Y];
+                    field[pos + p] = shape[p];
                 }
-                top = Math.Max(top, y + 1);
+                field.Top = Math.Max(field.Top, -pos.Y + 1);
             }
 
-            Console.WriteLine(Visualize(field, null, 0, 0));
-            Console.WriteLine(top - 1);
+            Console.WriteLine(field.Visualize(null, new Vector()));
+            Console.WriteLine(field.Top - 1);
         }
 
         public override void SolveMain()
