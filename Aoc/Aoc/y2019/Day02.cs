@@ -14,7 +14,7 @@ namespace Aoc.y2019
 
         public override void Solve()
         {
-            var i = new IntCodeInterpreter(GetInputLines(false).First());
+            var i = new IntCodeInterpreter(GetInputLines(false).First(), null, null);
             i[1] = 12;
             i[2] = 2;
             i.Run();
@@ -23,7 +23,7 @@ namespace Aoc.y2019
 
         public override void SolveMain()
         {
-            var i = new IntCodeInterpreter(GetInputLines(false).First());
+            var i = new IntCodeInterpreter(GetInputLines(false).First(), null, null);
             int noun;
             int verb = 0;
             for (noun = 0; noun <= 99; ++noun)
