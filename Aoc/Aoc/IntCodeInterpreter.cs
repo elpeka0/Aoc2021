@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Aoc
@@ -54,6 +56,49 @@ namespace Aoc
             {
                 return this[ip + c + 1];
             }
+        }
+
+        public static Func<long> MakeInput(params long[] e)
+        {
+            var n = e.Cast<long>().GetEnumerator();
+            return () => 
+            { 
+                n.MoveNext();
+                return n.Current;
+            };
+        }
+
+        public record Channel(Func<long> Receive, Action<long> Send);
+
+        public static Channel MakeChannel(int nr, bool debug)
+        {
+            var signal = new object();
+            var values = new Queue<long>();
+
+            return new(() =>
+                {
+                    lock (signal)
+                    {
+                        while (!values.Any())
+                        {
+                            Monitor.Wait(signal);
+                        }
+
+                        return values.Dequeue();
+                    }
+                },
+                v =>
+                {
+                    lock (signal)
+                    {
+                        values.Enqueue(v);
+                        if (debug)
+                        {
+                            Console.WriteLine($"C{nr} -> {v}");
+                        }
+                        Monitor.Pulse(signal);
+                    }
+                });
         }
 
         public void Run()
