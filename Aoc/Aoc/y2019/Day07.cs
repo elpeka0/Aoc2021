@@ -79,7 +79,7 @@ namespace Aoc.y2019
             var best = 0L;
             foreach (var setup in GetSequences())
             {
-                var channels = setup.Select((_, i) => IntCodeInterpreter.MakeChannel(i, false)).ToList();
+                var channels = setup.Select((_, i) => new Channel()).ToList();
                 var amps = setup.Select((_, i) => new IntCodeInterpreter(GetInputLines(false).First(), channels[(i + 1) % channels.Count].Receive, channels[i].Send)).ToList();
 
                 var all = Task.WhenAll(amps.Select(a => Task.Run(a.Run)));

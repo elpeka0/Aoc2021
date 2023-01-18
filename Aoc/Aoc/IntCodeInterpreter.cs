@@ -18,10 +18,12 @@ namespace Aoc
         private const int JFalse = 6;
         private const int Lt = 7;
         private const int Eq = 8;
+        private const int Rel = 9;
         private const int Halt = 99;
 
-        private readonly List<long> memory;
-        private readonly List<long> original;
+        private long rbase;
+        private readonly Dictionary<long, long> memory;
+        private readonly Dictionary<long, long> original;
         private readonly Func<long> input;
         private readonly Action<long> output;
 
@@ -29,14 +31,14 @@ namespace Aoc
         {
             this.input = input;
             this.output = output;
-            this.memory = line.Split(',').Select(i => long.Parse(i)).ToList();
-            this.original = this.memory.ToList();
+            this.memory = line.Split(',').Select((i, l) => (V: long.Parse(i), K: (long)l)).ToDictionary(t => t.K, t => t.V);
+            this.original = this.memory.ToDictionary(kv => kv.Key, kv => kv.Value);
         }
 
         public long this[long index]
         {
-            get => this.memory[(int)index];
-            set => this.memory[(int)index] = value;
+            get => this.memory.TryGetValue(index, out var v) ? v : 0;
+            set => this.memory[index] = value;
         }
 
         public long Get(long op, int c, int ip)
@@ -48,14 +50,35 @@ namespace Aoc
             }
 
             var m = (op / v) % 10;
-            if (m == 0)
+
+            var f = this[ip + c + 1];
+            return m switch
             {
-                return this[this[ip + c + 1]];
-            }
-            else
+                0 => this[f],
+                1 => f,
+                _ => this[this.rbase + f]
+            };
+        }
+        public void Set(long op, int c, int ip, long value)
+        {
+            var v = 100;
+            for (int i = 0; i < c; i++)
             {
-                return this[ip + c + 1];
+                v *= 10;
             }
+
+            var m = (op / v) % 10;
+
+            var f = this[ip + c + 1];
+            switch(m)
+            {
+                case 0: 
+                    this[f] = value; 
+                    break;
+                default:
+                    this[this.rbase + f] = value;
+                    break;
+            };
         }
 
         public static Func<long> MakeInput(params long[] e)
@@ -68,39 +91,6 @@ namespace Aoc
             };
         }
 
-        public record Channel(Func<long> Receive, Action<long> Send);
-
-        public static Channel MakeChannel(int nr, bool debug)
-        {
-            var signal = new object();
-            var values = new Queue<long>();
-
-            return new(() =>
-                {
-                    lock (signal)
-                    {
-                        while (!values.Any())
-                        {
-                            Monitor.Wait(signal);
-                        }
-
-                        return values.Dequeue();
-                    }
-                },
-                v =>
-                {
-                    lock (signal)
-                    {
-                        values.Enqueue(v);
-                        if (debug)
-                        {
-                            Console.WriteLine($"C{nr} -> {v}");
-                        }
-                        Monitor.Pulse(signal);
-                    }
-                });
-        }
-
         public void Run()
         {
             var ip = 0;
@@ -110,15 +100,15 @@ namespace Aoc
                 switch (i % 100)
                 {
                     case Add:
-                        this[this[ip + 3]] = Get(i, 0, ip) + Get(i, 1, ip);
+                        Set(i, 2, ip, Get(i, 0, ip) + Get(i, 1, ip));
                         ip += 4;
                         break;
                     case Mul:
-                        this[this[ip + 3]] = Get(i, 0, ip) * Get(i, 1, ip);
+                        Set(i, 2, ip, Get(i, 0, ip) * Get(i, 1, ip));
                         ip += 4;
                         break;
                     case In:
-                        this[this[ip + 1]] = this.input();
+                        Set(i, 0, ip, this.input());
                         ip += 2;
                         break;
                     case Out:
@@ -146,12 +136,16 @@ namespace Aoc
                         }
                         break;
                     case Lt:
-                        this[this[ip + 3]] = Get(i, 0, ip) < Get(i, 1, ip) ? 1 : 0;
+                        Set(i, 2, ip, Get(i, 0, ip) < Get(i, 1, ip) ? 1 : 0);
                         ip += 4;
                         break;
                     case Eq:
-                        this[this[ip + 3]] = Get(i, 0, ip) == Get(i, 1, ip) ? 1 : 0;
+                        Set(i, 2, ip, Get(i, 0, ip) == Get(i, 1, ip) ? 1 : 0);
                         ip += 4;
+                        break;
+                    case Rel:
+                        this.rbase += Get(i, 0, ip);
+                        ip += 2;
                         break;
                     case Halt:
                         break;
@@ -164,7 +158,10 @@ namespace Aoc
         public void Reset()
         {
             this.memory.Clear();
-            this.memory.AddRange(this.original);
+            foreach (var kv in this.original)
+            {
+                this.memory[kv.Key] = kv.Value;
+            }
         }
     }
 }
