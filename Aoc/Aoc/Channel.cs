@@ -10,6 +10,16 @@ namespace Aoc
     internal class Channel
     {
         private readonly Queue<long> q = new Queue<long>();
+        public bool HasValues 
+        {
+            get 
+            {
+                lock (this.q)
+                {
+                    return this.q.Any();
+                }
+            }
+        }
 
         public long? ReceiveUnlessCompleted(Task syncWith)
         {
@@ -17,7 +27,7 @@ namespace Aoc
             {
                 if (this.q.Count == 0)
                 {
-                    while (!Monitor.Wait(this.q, TimeSpan.FromMilliseconds(100)))
+                    while (this.q.Count == 0 && !Monitor.Wait(this.q, TimeSpan.FromMilliseconds(100)))
                     {
                         if (syncWith != null && syncWith.IsCompleted)
                         {

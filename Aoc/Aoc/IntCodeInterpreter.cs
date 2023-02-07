@@ -91,6 +91,20 @@ namespace Aoc
             };
         }
 
+        public static Action<long> MakeBatch(int n, Action<List<long>> callback)
+        {
+            var l = new List<long>();
+            return v => 
+            { 
+                l.Add(v);
+                if (l.Count == n)
+                {
+                    callback(l);
+                    l.Clear();
+                }
+            };
+        }
+
         public void Run()
         {
             var ip = 0;
