@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Aoc.Geometry;
 
 namespace Aoc.y2021
 {

@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace Aoc
+namespace Aoc.Geometry
 {
     public struct TransformMatrix : IEquatable<TransformMatrix>
     {
@@ -13,7 +10,7 @@ namespace Aoc
 
         public TransformMatrix()
         {
-            data = new int[4, 4];
+            this.data = new int[4, 4];
         }
 
         private TransformMatrix(int[,] data)
@@ -26,35 +23,35 @@ namespace Aoc
             int a10, int a11, int a12, int a13,
             int a20, int a21, int a22, int a23)
         {
-            data = new int[4, 4];
-            data[0, 0] = a00;
-            data[0, 1] = a01;
-            data[0, 2] = a02;
-            data[0, 3] = a03;
-            data[1, 0] = a10;
-            data[1, 1] = a11;
-            data[1, 2] = a12;
-            data[1, 3] = a13;
-            data[2, 0] = a20;
-            data[2, 1] = a21;
-            data[2, 2] = a22;
-            data[2, 3] = a23;
-            data[3, 0] = 0;
-            data[3, 1] = 0;
-            data[3, 2] = 0;
-            data[3, 3] = 1;
+            this.data = new int[4, 4];
+            this.data[0, 0] = a00;
+            this.data[0, 1] = a01;
+            this.data[0, 2] = a02;
+            this.data[0, 3] = a03;
+            this.data[1, 0] = a10;
+            this.data[1, 1] = a11;
+            this.data[1, 2] = a12;
+            this.data[1, 3] = a13;
+            this.data[2, 0] = a20;
+            this.data[2, 1] = a21;
+            this.data[2, 2] = a22;
+            this.data[2, 3] = a23;
+            this.data[3, 0] = 0;
+            this.data[3, 1] = 0;
+            this.data[3, 2] = 0;
+            this.data[3, 3] = 1;
         }
 
         public int this[int row, int column]
         {
-            get => data[row, column];
+            get => this.data[row, column];
         }
 
         public bool Equals(TransformMatrix other)
         {
-            for (var r = 0; r < data.GetLength(0); ++r)
+            for (var r = 0; r < this.data.GetLength(0); ++r)
             {
-                for (var c = 0; c < data.GetLength(1); ++c)
+                for (var c = 0; c < this.data.GetLength(1); ++c)
                 {
                     if (this[r, c] != other[r, c])
                     {
@@ -67,15 +64,15 @@ namespace Aoc
 
         public override bool Equals([NotNullWhen(true)] object obj)
         {
-            return obj is TransformMatrix m && Equals(m);
+            return obj is TransformMatrix m && this.Equals(m);
         }
 
         public override int GetHashCode()
         {
             var hc = 0;
-            for (var r = 0; r < data.GetLength(0) - 1; ++r)
+            for (var r = 0; r < this.data.GetLength(0) - 1; ++r)
             {
-                for (var c = 0; c < data.GetLength(1); ++c)
+                for (var c = 0; c < this.data.GetLength(1); ++c)
                 {
                     if (r == 0 && c == 0)
                     {
@@ -103,9 +100,9 @@ namespace Aoc
         public override string ToString()
         {
             var sb = new StringBuilder();
-            for (var r = 0; r < data.GetLength(0); ++r)
+            for (var r = 0; r < this.data.GetLength(0); ++r)
             {
-                for (var c = 0; c < data.GetLength(1); ++c)
+                for (var c = 0; c < this.data.GetLength(1); ++c)
                 {
                     sb.Append(this[r, c]);
                     sb.Append(" ");

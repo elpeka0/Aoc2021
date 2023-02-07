@@ -1,4 +1,5 @@
 ﻿using Aoc;
+using Aoc.Geometry;
 
 namespace Tests
 {
@@ -98,7 +99,7 @@ namespace Tests
         public void RowWorks()
         {
             var grid = new Grid<int>(7, 5);
-            grid.Apply((x, y) => grid[x, y] = x + y * 5);
+            grid.Apply(v => grid[v] = v.X + v.Y * 5);
 
             var row = grid.Row(2);
             Assert.AreEqual(7, row.Count);
@@ -112,7 +113,7 @@ namespace Tests
         public void ColumnWorks()
         {
             var grid = new Grid<int>(7, 5);
-            grid.Apply((x, y) => grid[x, y] = x + y * 5);
+            grid.Apply(v => grid[v] = v.X + v.Y * 5);
 
             var row = grid.Column(3);
             Assert.AreEqual(5, row.Count);
@@ -126,7 +127,7 @@ namespace Tests
         public void RowInvertWorks()
         {
             var grid = new Grid<int>(7, 5);
-            grid.Apply((x, y) => grid[x, y] = x + y * 5);
+            grid.Apply(v => grid[v] = v.X + v.Y * 5);
 
             var row = grid.Row(2).Invert();
             Assert.AreEqual(7, row.Count);
@@ -140,7 +141,7 @@ namespace Tests
         public void RowDoubleInvertWorks()
         {
             var grid = new Grid<int>(7, 5);
-            grid.Apply((x, y) => grid[x, y] = x + y * 5);
+            grid.Apply(v => grid[v] = v.X + v.Y * 5);
 
             var row = grid.Row(2).Invert().Invert();
             Assert.AreEqual(7, row.Count);

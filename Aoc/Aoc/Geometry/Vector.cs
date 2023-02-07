@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Aoc
+namespace Aoc.Geometry
 {
     public readonly struct Vector : IEquatable<Vector>
     {
@@ -109,15 +109,15 @@ namespace Aoc
 
         public void Deconstruct(out int x, out int y)
         {
-            x = X;
-            y = Y;
+            x = this.X;
+            y = this.Y;
         }
 
         public void Deconstruct(out int x, out int y, out int z)
         {
-            x = X;
-            y = Y;
-            z = Z;
+            x = this.X;
+            y = this.Y;
+            z = this.Z;
         }
     }
 }
