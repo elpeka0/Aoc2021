@@ -252,7 +252,7 @@ namespace Aoc.y2022
         private Grid<CubeCell> Cubify(Grid<char> grid)
         {
             var len = (int) Math.Sqrt(grid.Count(c => c != ' ') / 6);
-            var res = new Grid<CubeCell>(grid.Width, grid.Height);
+            var res = Grid<CubeCell>.WithSize(grid.Width, grid.Height);
             res.Fill(new CubeCell(' ', null, new Dictionary<Vector, Vector>()));
             var rules = ComputeMatrix(grid, len).ToList();
             Console.WriteLine(string.Join(Environment.NewLine, rules.Select(r => 

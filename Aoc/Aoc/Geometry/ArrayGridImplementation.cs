@@ -9,8 +9,21 @@ namespace Aoc.Geometry
     public class ArrayGridImplementation<T> : IGridImplementation<T>
     {
         private readonly T[,] grid;
-        public int Width { get; }
-        public int Height { get; }
+        public int MaxX { get; }
+        public int MaxY { get; }
+        public int MinX => 0;
+        public int MinY => 0;
+
+        public IEnumerable<Vector> Indexes()
+        {
+            for (var x = MinX; x <= MaxX; x++)
+            {
+                for (var y = MinY; y <= MaxY; y++)
+                {
+                    yield return new Vector(x, y);
+                }
+            }
+        }
 
         public T this[Vector v]
         {
@@ -21,8 +34,8 @@ namespace Aoc.Geometry
         public ArrayGridImplementation(int width, int height)
         {
             this.grid = new T[width, height];
-            this.Width = width;
-            this.Height = height;
+            this.MaxX = width - 1;
+            this.MaxY = height - 1;
         }
     }
 }

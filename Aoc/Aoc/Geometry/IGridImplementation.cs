@@ -8,8 +8,12 @@ namespace Aoc.Geometry
 {
     public interface IGridImplementation<T>
     {
-        int Width { get; }
-        int Height { get; }
+        int MaxX { get; }
+        int MaxY { get; }
+        int MinX { get; }
+        int MinY { get; }
+
+        IEnumerable<Vector> Indexes();
 
         T this[Vector v]
         {

@@ -15,10 +15,6 @@ namespace Aoc.Geometry
             this.impl = impl;
         }
 
-        public Grid(int width, int height) : this(new ArrayGridImplementation<T>(width, height))
-        {
-        }
-
         public T this[int x, int y]
         {
             get => this.impl[new (x, y)];
@@ -31,8 +27,12 @@ namespace Aoc.Geometry
             set => this.impl[v] = value;
         }
 
-        public int Width => this.impl.Width;
-        public int Height => this.impl.Height;
+        public int Width => this.impl.MaxX -  this.impl.MinX + 1;
+        public int Height => this.impl.MaxY - this.impl.MinY + 1;
+        public int MaxX => this.impl.MaxX;
+        public int MaxY => this.impl.MaxY;
+        public int MinX => this.impl.MinX;
+        public int MinY => this.impl.MinY;
 
         public void Apply(Action<Vector> operation)
         {
@@ -47,16 +47,7 @@ namespace Aoc.Geometry
             this.Apply(v => this.impl[v] = value);
         }
 
-        public IEnumerable<Vector> Indexes()
-        {
-            for (var x = 0; x < this.Width; ++x)
-            {
-                for (var y = 0; y < this.Height; ++y)
-                {
-                    yield return new(x, y);
-                }
-            }
-        }
+        public IEnumerable<Vector> Indexes() => this.impl.Indexes();
 
         public IEnumerable<Vector> Neighbors(Vector v, bool diagonal) => this.Neighbors(v.X, v.Y, diagonal);
 
@@ -112,9 +103,9 @@ namespace Aoc.Geometry
         public override string ToString()
         {
             var sb = new StringBuilder();
-            for (int y = 0; y < this.Height; ++y)
+            for (var y = MinY; y <= this.MaxY; ++y)
             {
-                for (int x = 0; x < this.Width; ++x)
+                for (var x = MinX; x <= this.MaxX; ++x)
                 {
                     sb.Append(this[x, y]);
                     sb.Append(' ');
@@ -126,27 +117,37 @@ namespace Aoc.Geometry
             return sb.ToString();
         }
 
-        public GridSlice<T> Row(int y) => new(this, new(1, 0), this.Width, new(0, y));
-        public GridSlice<T> Column(int x) => new(this, new(0, 1), this.Height, new(x, 0));
+        public GridSlice<T> Row(int y) => new(this, new(1, 0), this.Width, new(MinX, y));
+        public GridSlice<T> Column(int x) => new(this, new(0, 1), this.Height, new(x, MinY));
 
         public IEnumerable<GridSlice<T>> Rows()
         {
-            for (int y = 0; y < this.Height; ++y)
+            for (var y = MinY; y <= this.MaxY; ++y)
             {
                 yield return this.Row(y);
             }
         }
         public IEnumerable<GridSlice<T>> Columns()
         {
-            for (int x = 0; x < this.Width; ++x)
+            for (var x = MinX; x <= this.MaxX; ++x)
             {
                 yield return this.Column(x);
             }
         }
 
+        public static Grid<T> WithSize(int width, int height)
+        {
+            return new Grid<T>(new ArrayGridImplementation<T>(width, height));
+        }
+
+        public static Grid<T> Dynamic()
+        {
+            return new Grid<T>(new DictionaryGridImplementation<T>());
+        }
+
         public static Grid<T> FromLines(List<string> lines, Func<char, T> selector)
         {
-            var grid = new Grid<T>(lines.Max(l => l.Length), lines.Count);
+            var grid = WithSize(lines.Max(l => l.Length), lines.Count);
             var y = 0;
             foreach (var line in lines)
             {

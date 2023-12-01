@@ -64,23 +64,23 @@ namespace Aoc.y2022
         private Grid<char>[] GetTetris()
         {
             var tetris = new Grid<char>[5];
-            tetris[0] = new Grid<char>(4, 1);
+            tetris[0] = Grid<char>.WithSize(4, 1);
             tetris[0].Fill('#');
-            tetris[1] = new Grid<char>(3, 3);
+            tetris[1] = Grid<char>.WithSize(3, 3);
             tetris[1].Fill('#');
             tetris[1][0, 0] = '.';
             tetris[1][0, 2] = '.';
             tetris[1][2, 0] = '.';
             tetris[1][2, 2] = '.';
-            tetris[2] = new Grid<char>(3, 3);
+            tetris[2] = Grid<char>.WithSize(3, 3);
             tetris[2].Fill('#');
             tetris[2][0, 0] = '.';
             tetris[2][0, 1] = '.';
             tetris[2][1, 0] = '.';
             tetris[2][1, 1] = '.';
-            tetris[3] = new Grid<char>(1, 4);
+            tetris[3] = Grid<char>.WithSize(1, 4);
             tetris[3].Fill('#');
-            tetris[4] = new Grid<char>(2, 2);
+            tetris[4] = Grid<char>.WithSize(2, 2);
             tetris[4].Fill('#');
             return tetris;
         }

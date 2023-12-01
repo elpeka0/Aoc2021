@@ -13,7 +13,7 @@ namespace Aoc.y2021
         private Grid<bool?> GetInput()
         {
             var lines = this.GetInputLines(false).ToList();
-            var res = new Grid<bool?>(lines[0].Length, lines.Count);
+            var res = Grid<bool?>.WithSize(lines[0].Length, lines.Count);
             var y = 0;
             foreach(var line in lines)
             {
@@ -33,7 +33,7 @@ namespace Aoc.y2021
 
         private (Grid<bool?> Grid, bool Any) Right(Grid<bool?> grid)
         {
-            var res = new Grid<bool?>(grid.Width, grid.Height);
+            var res = Grid<bool?>.WithSize(grid.Width, grid.Height);
             var any = false;
             foreach (var (x, y) in grid.Indexes())
             {
@@ -61,7 +61,7 @@ namespace Aoc.y2021
 
         private (Grid<bool?> Grid, bool Any) Down(Grid<bool?> grid)
         {
-            var res = new Grid<bool?>(grid.Width, grid.Height);
+            var res = Grid<bool?>.WithSize(grid.Width, grid.Height);
             var any = false;
             foreach (var (x, y) in grid.Indexes())
             {

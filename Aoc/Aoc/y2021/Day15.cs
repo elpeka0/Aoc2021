@@ -15,7 +15,7 @@ namespace Aoc.y2021
         {
             var all = this.GetInputLines(false).ToList();
             var size = all.Count*5;
-            var grid = new Grid<int>(size, size);
+            var grid = Grid<int>.WithSize(size, size);
             var y = 0;
             foreach (var line in all)
             {
@@ -51,7 +51,7 @@ namespace Aoc.y2021
 
         private Grid<int> ComputeCosts(Grid<int> grid)
         {
-            var cost = new Grid<int>(grid.Width, grid.Height);
+            var cost = Grid<int>.WithSize(grid.Width, grid.Height);
             cost.Fill(int.MaxValue);
 
             cost[0, 0] = 0;

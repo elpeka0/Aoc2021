@@ -9,7 +9,7 @@ namespace Tests
         [TestMethod]
         public void ConstructedCorrectly()
         {
-            var grid = new Grid<int>(7, 5);
+            var grid = Grid<int>.WithSize(7, 5);
             Assert.AreEqual(7, grid.Width);
             Assert.AreEqual(5, grid.Height);
             var cnt = 0;
@@ -24,7 +24,7 @@ namespace Tests
         [TestMethod]
         public void FillWorks()
         {
-            var grid = new Grid<int>(7, 5);
+            var grid = Grid<int>.WithSize(7, 5);
             grid.Fill(17); 
             foreach (var n in grid)
             {
@@ -35,7 +35,7 @@ namespace Tests
         [TestMethod]
         public void IndexIterationWorks()
         {
-            var grid = new Grid<int>(7, 5);
+            var grid = Grid<int>.WithSize(7, 5);
             var set = new HashSet<Vector>();
             foreach (var index in grid.Indexes())
             {
@@ -52,7 +52,7 @@ namespace Tests
         [TestMethod]
         public void IndexerWorks()
         {
-            var grid = new Grid<int>(7, 5);
+            var grid = Grid<int>.WithSize(7, 5);
             grid[2, 3] = 5;
             Assert.AreEqual(5, grid[2, 3]);
             Assert.IsTrue(grid.Indexes().All(i => (i.X == 2 && i.Y == 3) || grid[i.X, i.Y] == 0));
@@ -61,7 +61,7 @@ namespace Tests
         [TestMethod]
         public void NeighborsWorksAtOrigin()
         {
-            var grid = new Grid<int>(7, 5);
+            var grid = Grid<int>.WithSize(7, 5);
             var n = grid.Neighbors(0, 0, false).ToList();
             Assert.AreEqual(2, n.Count);
             Assert.IsTrue(n.Contains(new (0, 1)));
@@ -76,7 +76,7 @@ namespace Tests
         [TestMethod]
         public void NeighborsWorksInTheMiddle()
         {
-            var grid = new Grid<int>(7, 5);
+            var grid = Grid<int>.WithSize(7, 5);
             var n = grid.Neighbors(3, 2, false).ToList();
             Assert.AreEqual(4, n.Count);
             Assert.IsTrue(n.Contains(new(2, 2)));
@@ -98,7 +98,7 @@ namespace Tests
         [TestMethod]
         public void RowWorks()
         {
-            var grid = new Grid<int>(7, 5);
+            var grid = Grid<int>.WithSize(7, 5);
             grid.Apply(v => grid[v] = v.X + v.Y * 5);
 
             var row = grid.Row(2);
@@ -112,7 +112,7 @@ namespace Tests
         [TestMethod]
         public void ColumnWorks()
         {
-            var grid = new Grid<int>(7, 5);
+            var grid = Grid<int>.WithSize(7, 5);
             grid.Apply(v => grid[v] = v.X + v.Y * 5);
 
             var row = grid.Column(3);
@@ -126,7 +126,7 @@ namespace Tests
         [TestMethod]
         public void RowInvertWorks()
         {
-            var grid = new Grid<int>(7, 5);
+            var grid = Grid<int>.WithSize(7, 5);
             grid.Apply(v => grid[v] = v.X + v.Y * 5);
 
             var row = grid.Row(2).Invert();
@@ -140,7 +140,7 @@ namespace Tests
         [TestMethod]
         public void RowDoubleInvertWorks()
         {
-            var grid = new Grid<int>(7, 5);
+            var grid = Grid<int>.WithSize(7, 5);
             grid.Apply(v => grid[v] = v.X + v.Y * 5);
 
             var row = grid.Row(2).Invert().Invert();

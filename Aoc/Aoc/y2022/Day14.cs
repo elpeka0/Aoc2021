@@ -28,7 +28,7 @@ namespace Aoc.y2022
         private Grid<char> GetInput(bool addFloor)
         {
             var lines = GetLines().ToList();
-            var res = new Grid<char>(1000, 1000);
+            var res = Grid<char>.WithSize(1000, 1000);
             res.Fill('.');
             foreach (var points in lines)
             {

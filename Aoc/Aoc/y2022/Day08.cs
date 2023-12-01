@@ -32,7 +32,7 @@ namespace Aoc.y2022
         public override void Solve()
         {
             var grid = GetInput();
-            var visible = new Grid<bool>(grid.Width, grid.Height);
+            var visible = Grid<bool>.WithSize(grid.Width, grid.Height);
             int tallest = -1;
 
             Iterate(grid, () => tallest = -1, (int x, int y) =>
@@ -51,7 +51,7 @@ namespace Aoc.y2022
         {
             var grid = GetInput();
             var distance = new Dictionary<int, int>();
-            var score = new Grid<int>(grid.Width, grid.Height);
+            var score = Grid<int>.WithSize(grid.Width, grid.Height);
             score.Fill(1);
 
             Iterate(grid, () =>
