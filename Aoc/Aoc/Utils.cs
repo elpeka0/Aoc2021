@@ -44,5 +44,15 @@ namespace Aoc
             }
             return null;
         }
+
+        public static TValue GetWithDefault<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, TValue defaultValue)
+        {
+            if (!dictionary.TryGetValue(key, out TValue value))
+            {
+                return defaultValue;
+            }
+
+            return value;
+        }
     }
 }

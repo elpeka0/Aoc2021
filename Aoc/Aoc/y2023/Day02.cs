@@ -1,8 +1,10 @@
-﻿using System;
+﻿using Aoc.Parsing;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Aoc.Parsing.Parser;
 
 namespace Aoc.y2023
 {
@@ -19,29 +21,19 @@ namespace Aoc.y2023
 
         private Game Parse(string line)
         {
-            var parts = line.Split(':');
-            var id = int.Parse(parts[0].Split(' ')[1]);
-            parts = parts[1].Split(';');
-            var l = new List<Dictionary<Color, int>>();
-            foreach (var p in parts)
-            {
-                var sub = p.Split(',');
-                var d = new Dictionary<Color, int>()
-                {
-                    [Color.Green] = 0,
-                    [Color.Red] = 0,
-                    [Color.Blue] = 0
-                };
-                foreach (var s in sub)
-                {
-                    var a = s.Split();
-                    var nr = int.Parse(a[1]);
-                    var color = (Color) Enum.Parse(typeof(Color), a[2], true);
-                    d[color] = nr;
-                }
-                l.Add(d);
-            }
-            return new Game(id, l);
+            var atom = Integer()
+                .ThenWs(Enum<Color>());
+            var round = atom
+                .RepeatWithSeperatorWs(",")
+                .Map(e => e.ToDictionary(t => t.Item2, t => t.Item1));
+            var parser = "Game"
+                .ThenWs(Integer())
+                .ThenWs(":")
+                .ThenWs(round.RepeatWithSeperatorWs(";"))
+                .Map(t => new Game(t.Item1, t.Item2.ToList()));
+
+            var res = parser.Parse(new Input(line)).Value;
+            return res;
         }
 
         public Day02() : base(2)
@@ -52,7 +44,10 @@ namespace Aoc.y2023
         {
             var sum = GetInputLines(false)
                 .Select(Parse)
-                .Where(game => game.Rounds.All(round => round[Color.Red] <= 12 && round[Color.Blue] <= 14 && round[Color.Green] <= 13))
+                .Where(game => game.Rounds.All(round => 
+                    round.GetWithDefault(Color.Red, 0) <= 12 
+                    && round.GetWithDefault(Color.Blue, 0) <= 14 
+                    && round.GetWithDefault(Color.Green, 0) <= 13))
                 .Sum(game => game.Id);
             Console.WriteLine(sum);
         }
@@ -61,7 +56,10 @@ namespace Aoc.y2023
         {
             var sum = GetInputLines(false)
                 .Select(Parse)
-                .Select(game => (game.Rounds.Max(round => round[Color.Red]), game.Rounds.Max(round => round[Color.Blue]), game.Rounds.Max(round => round[Color.Green])))
+                .Select(game => (
+                    game.Rounds.Max(round => round.GetWithDefault(Color.Red, 0)), 
+                    game.Rounds.Max(round => round.GetWithDefault(Color.Blue, 0)), 
+                    game.Rounds.Max(round => round.GetWithDefault(Color.Green, 0))))
                 .Select(t => t.Item1 * t.Item2 * t.Item3)
                 .Sum();
             Console.WriteLine(sum);
