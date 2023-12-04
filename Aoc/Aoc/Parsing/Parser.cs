@@ -112,7 +112,7 @@ namespace Aoc.Parsing
 
         public static IParser<int> Integer()
         {
-            return Digit().Repeat().Map(e => e.Aggregate(0, (a, b) => 10 * a + b));
+            return Digit().Repeat(1, int.MaxValue).Map(e => e.Aggregate(0, (a, b) => 10 * a + b));
         }
 
         public static IParser<T> Enum<T>()
