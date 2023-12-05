@@ -17,7 +17,7 @@ namespace Aoc.y2023
             Blue
         }
 
-        private record Game(int Id, List<Dictionary<Color, int>> Rounds);
+        private record Game(long Id, List<Dictionary<Color, long>> Rounds);
 
         private Game Parse(string line)
         {

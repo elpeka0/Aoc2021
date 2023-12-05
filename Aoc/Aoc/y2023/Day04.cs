@@ -11,7 +11,7 @@ namespace Aoc.y2023
     public class Day04 : DayBase
 
     {
-        private record Game(int Id, HashSet<int> Winning, HashSet<int> Mine)
+        private record Game(long Id, HashSet<long> Winning, HashSet<long> Mine)
         {
             public int Evaluate()
             {

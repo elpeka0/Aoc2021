@@ -110,9 +110,9 @@ namespace Aoc.Parsing
             return parser.Repeat(1, int.MaxValue).Map(e => new string(e.ToArray()));
         }
 
-        public static IParser<int> Integer()
+        public static IParser<long> Integer()
         {
-            return Digit().Repeat(1, int.MaxValue).Map(e => e.Aggregate(0, (a, b) => 10 * a + b));
+            return Digit().Repeat(1, int.MaxValue).Map(e => e.Aggregate(0L, (a, b) => 10 * a + b));
         }
 
         public static IParser<T> Enum<T>()
@@ -153,5 +153,8 @@ namespace Aoc.Parsing
         public static IParser<IEnumerable<T>> RepeatWithSeperatorWs<T>(this IParser<T> first, string seperator) => first.RepeatWithSeperatorWs(Literal(seperator).Discard());
 
         public static IParser<T> Or<T>(this IParser<T> left, IParser<T> right) => new ChoiceParser<T>(left, right);
+
+        public static IParser<List<long>> IntegerList() =>
+            Integer().ThenOther(Whitespace()).Repeat().Map(e => e.ToList());
     }
 }
