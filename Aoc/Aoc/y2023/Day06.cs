@@ -16,15 +16,15 @@ namespace Aoc.y2023
 
         private record Race(long Time, long Distance)
         {
-            public IEnumerable<long> Winning()
+            public long CountWins()
             {
-                for (var l = 0; l < Time; ++l)
+                var a = (long)Math.Ceiling((Time - Math.Sqrt(Time * Time - 4 * Distance)) / 2.0);
+                if (a * (Time - a) == Distance)
                 {
-                    if (l * (Time - l) > Distance)
-                    {
-                        yield return l;
-                    }
+                    ++a;
                 }
+
+                return Time - 2*a + 1;
             }
         }
 
@@ -41,7 +41,7 @@ namespace Aoc.y2023
         public override void Solve()
         {
             var state = this.Load();
-            Console.WriteLine(state.races.Aggregate(1L, (a, b) => a * b.Winning().Count()));
+            Console.WriteLine(state.races.Aggregate(1L, (a, b) => a * b.CountWins()));
         }
 
         public override void SolveMain()
