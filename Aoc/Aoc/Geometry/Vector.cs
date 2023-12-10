@@ -35,6 +35,30 @@ namespace Aoc.Geometry
             }
         }
 
+        public IEnumerable<Vector> Neighbors(bool diagonal)
+        {
+            yield return new(X - 1, Y);
+            if (diagonal)
+            {
+                yield return new(X - 1, Y - 1);
+            }
+            if (diagonal)
+            {
+                yield return new(X - 1, Y + 1);
+            }
+            yield return new(X, Y - 1);
+            yield return new(X, Y + 1);
+            yield return new(X + 1, Y);
+            if (diagonal)
+            {
+                yield return new(X + 1, Y - 1);
+            }
+            if (diagonal)
+            {
+                yield return new(X + 1, Y + 1);
+            }
+        }
+
         public Vector Scale(Vector scaling)
         {
             return new Vector(this.X * scaling.X, this.Y * scaling.Y, this.Z * scaling.Z);
@@ -106,6 +130,8 @@ namespace Aoc.Geometry
             yield return new Vector(-1, -1, 1);
             yield return new Vector(-1, -1, -1);
         }
+
+        public static readonly Vector Origin = new Vector();
 
         public void Deconstruct(out int x, out int y)
         {

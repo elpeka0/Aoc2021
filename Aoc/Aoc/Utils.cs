@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Aoc
 {
@@ -42,6 +43,37 @@ namespace Aoc
                     }
                 }
             }
+            return null;
+        }
+
+        public static List<T> Dfs<T>(T initial, Func<T, IEnumerable<T>> step, Func<T, bool> done)
+        {
+            var stack = new Stack<Link<T>>();
+            stack.Push(new Link<T>(initial, null));
+            var visited = new HashSet<T>();
+            while (stack.Count > 0)
+            {
+                var next = stack.Pop();
+                if (done(next.Current))
+                {
+                    var res = new List<T>();
+                    for (var p = next; p != null; p = p.Previous)
+                    {
+                        res.Add(p.Current);
+                    }
+                    res.Reverse();
+                    return res;
+                }
+                foreach (var e in step(next.Current))
+                {
+                    if (!visited.Contains(e))
+                    {
+                        visited.Add(e);
+                        stack.Push(new Link<T>(e, next));
+                    }
+                }
+            }
+
             return null;
         }
 
