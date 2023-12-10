@@ -115,6 +115,11 @@ namespace Aoc.Parsing
             return Digit().Repeat(1, int.MaxValue).Map(e => e.Aggregate(0L, (a, b) => 10 * a + b));
         }
 
+        public static IParser<long> IntegerSigned()
+        {
+            return Literal("-").OptionalC().Map(s => s != null ? -1 : 1).ThenOther(Integer()).Map(t => t.Item1*t.Item2);
+        }
+
         public static IParser<T> Enum<T>()
         {
             return Letter().String().Map(s => (T)System.Enum.Parse(typeof(T), s, true));
@@ -156,5 +161,8 @@ namespace Aoc.Parsing
 
         public static IParser<List<long>> IntegerList() =>
             Integer().ThenOther(Whitespace()).Repeat().Map(e => e.ToList());
+
+        public static IParser<List<long>> IntegerListSigned() =>
+            IntegerSigned().ThenOther(Whitespace()).Repeat().Map(e => e.ToList());
     }
 }
