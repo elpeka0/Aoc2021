@@ -46,6 +46,54 @@ namespace Aoc
             return null;
         }
 
+        public static Dictionary<T, long> Dijkstra<T>(
+            T initial, 
+            Func<T, IEnumerable<(T Value, long Cost)>> step)
+        {
+            var q = new SortedDictionary<long, List<T>>();
+            var tentative = new Dictionary<T, long>();
+            q[0] = new List<T> { initial };
+
+            while (q.Any())
+            {
+                var l = q.First();
+                var next = l.Value.Last();
+                l.Value.RemoveAt(l.Value.Count - 1);
+                if (l.Value.Count == 0)
+                {
+                    q.Remove(l.Key);
+                }
+                
+                foreach (var n in step(next))
+                {
+                    var oldWeight = tentative.GetWithDefault(n.Value, long.MaxValue);
+                    var newWeight = l.Key + n.Cost;
+
+                    if (newWeight < oldWeight)
+                    {
+                        tentative[n.Value] = newWeight;
+                        if (q.TryGetValue(oldWeight, out var s) && s.Contains(n.Value))
+                        {
+                            s.Remove(n.Value);
+                            if (s.Count == 0)
+                            {
+                                q.Remove(oldWeight);
+                            }
+                        }
+
+                        if (!q.TryGetValue(newWeight, out s))
+                        {
+                            s = new List<T>();
+                            q[newWeight] = s;
+                        }
+                        s.Add(n.Value);
+                    }
+                }
+            }
+
+            return tentative;
+        }
+
         public static List<T> Dfs<T>(T initial, Func<T, IEnumerable<T>> step, Func<T, bool> done)
         {
             var stack = new Stack<Link<T>>();
