@@ -164,5 +164,9 @@ namespace Aoc.Parsing
 
         public static IParser<List<long>> IntegerListSigned() =>
             IntegerSigned().ThenOther(Whitespace()).Repeat().Map(e => e.ToList());
+
+        public static T Evaluate<T>(this IParser<T> parser, string input) => parser.Parse(new Input(input)).Value;
+
+        public static IEnumerable<T> Evaluate<T>(this IParser<T> parser, IEnumerable<string> input) => input.Select(parser.Evaluate);
     }
 }
