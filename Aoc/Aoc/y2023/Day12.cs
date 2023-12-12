@@ -26,11 +26,10 @@ namespace Aoc.y2023
 
         private State Quintuple(State s)
         {
-            var code = string.Empty;
+            var code = string.Join("?", Enumerable.Range(0, 5).Select(_ => s.Code));
             var l = new List<long>();
             for (var i = 0; i < 5; ++i)
             {
-                code += s.Code;
                 l.AddRange(s.Groups);
             }
             return new State(code, l);
@@ -68,8 +67,9 @@ namespace Aoc.y2023
             return true;
         }
 
-        private long CountMatches(ReadOnlySpan<char> code, ReadOnlySpan<long> groups)
+        private long CountMatchesOld(ReadOnlySpan<char> code, ReadOnlySpan<long> groups)
         {
+
             var sw = new Stopwatch();
             sw.Start();
             return Impl(code, groups);
@@ -112,56 +112,63 @@ namespace Aoc.y2023
             }
         }
 
+        private long CountMatches(string code, IReadOnlyList<long> groups)
+        {
+            var lookup = new Dictionary<(int, int), long>();
+            var sw = new Stopwatch();
+            sw.Start();
+            return Impl(0, 0);
+
+            long Impl(int codePos, int groupPos)
+            {
+                var key = (codePos, groupPos);
+                if (sw.ElapsedMilliseconds > 5000)
+                {
+                    throw new TimeoutException();
+                }
+
+                if (lookup.TryGetValue(key, out var v))
+                {
+                    return v;
+                }
+
+                var g = (int)groups[groupPos];
+                var res = 0L;
+                while (code.Length - codePos >= g + 2)
+                {
+                    if (IsMatch(code.AsSpan(codePos, g + 2)))
+                    {
+                        if (groupPos < groups.Count - 1)
+                        {
+                            res += Impl(codePos + g + 1, groupPos + 1);
+                        }
+                        else
+                        {
+                            if (code.IndexOf('#', codePos + g + 2) == -1)
+                            {
+                                res++;
+                            }
+                        }
+                    }
+
+                    codePos++;
+
+                    if (code[codePos] == '#')
+                    {
+                        break;
+                    }
+                }
+
+                lookup[key] = res;
+                return res;
+            }
+        }
+
         private long CountMatches(State line)
         {
-            var parts = line.Code.Split('.');
-            var groups = line.Groups.ToArray().AsSpan();
-            var carry = new Dictionary<int, long> { [0] = 1 };
-
-            foreach (var p in parts)
-            {
-                var l = new Dictionary<int, long>();
-                foreach(var (o, m) in carry)
-                {
-                    FitParts($".{p}.", groups.Slice(o), (mm, oo) =>
-                    {
-                        l.TryGetValue(o + oo, out var s);
-                        l[o + oo] = s + m * mm;
-                    });
-                }
-
-                carry = l;
-            }
-
-            return carry.GetWithDefault(line.Groups.Count, 0L);
-
-            void FitParts(ReadOnlySpan<char> code, ReadOnlySpan<long> groups, Action<long, int> yield)
-            {
-                var matches = 0L;
-                var i = 1;
-                for (; i <= groups.Length && matches == 0; i++)
-                {
-                    matches = CountMatches(code, groups.Slice(0, i));
-                    if (matches > 0)
-                    {
-                        yield(matches, i);
-                    }
-                }
-
-                if (!code.Contains('#'))
-                {
-                    yield(1, 0);
-                }
-
-                for (; i <= groups.Length; i++)
-                {
-                    matches = CountMatches(code, groups.Slice(0, i));
-                    if (matches > 0)
-                    {
-                        yield(matches, i);
-                    }
-                }
-            }
+            var res = CountMatches($".{line.Code}.", line.Groups.ToArray());
+            Console.WriteLine($"{line} {res}");
+            return res;
         }
 
         public override void Solve()
