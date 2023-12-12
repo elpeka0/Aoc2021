@@ -68,44 +68,109 @@ namespace Aoc.y2023
             return true;
         }
 
-        private int CountMatches(ReadOnlySpan<char> code, ReadOnlySpan<long> groups)
+        private long CountMatches(ReadOnlySpan<char> code, ReadOnlySpan<long> groups)
         {
-            var g = (int)groups[0];
-            var res = 0;
-            while (code.Length >= g + 2)
+            var sw = new Stopwatch();
+            sw.Start();
+            return Impl(code, groups);
+
+            long Impl(ReadOnlySpan<char> code, ReadOnlySpan<long> groups)
             {
-                if (IsMatch(code.Slice(0, g + 2)))
+                if (sw.ElapsedMilliseconds > 5000)
                 {
-                    if (groups.Length > 1)
+                    throw new TimeoutException();
+                }
+
+                var g = (int)groups[0];
+                var res = 0L;
+                while (code.Length >= g + 2)
+                {
+                    if (IsMatch(code.Slice(0, g + 2)))
                     {
-                        res += CountMatches(code.Slice(g + 1), groups.Slice(1));
-                    }
-                    else
-                    {
-                        if (!code.Slice(g + 2).Contains('#'))
+                        if (groups.Length > 1)
                         {
-                            res++;
+                            res += Impl(code.Slice(g + 1), groups.Slice(1));
+                        }
+                        else
+                        {
+                            if (!code.Slice(g + 2).Contains('#'))
+                            {
+                                res++;
+                            }
                         }
                     }
-                }
-                code = code.Slice(1);
 
-                if (code[0] == '#')
-                {
-                    break;
+                    code = code.Slice(1);
+
+                    if (code[0] == '#')
+                    {
+                        break;
+                    }
                 }
+
+                return res;
+            }
+        }
+
+        private long CountMatches(State line)
+        {
+            var parts = line.Code.Split('.');
+            var groups = line.Groups.ToArray().AsSpan();
+            var carry = new Dictionary<int, long> { [0] = 1 };
+
+            foreach (var p in parts)
+            {
+                var l = new Dictionary<int, long>();
+                foreach(var (o, m) in carry)
+                {
+                    FitParts($".{p}.", groups.Slice(o), (mm, oo) =>
+                    {
+                        l.TryGetValue(o + oo, out var s);
+                        l[o + oo] = s + m * mm;
+                    });
+                }
+
+                carry = l;
             }
 
-            return res;
+            return carry.GetWithDefault(line.Groups.Count, 0L);
+
+            void FitParts(ReadOnlySpan<char> code, ReadOnlySpan<long> groups, Action<long, int> yield)
+            {
+                var matches = 0L;
+                var i = 1;
+                for (; i <= groups.Length && matches == 0; i++)
+                {
+                    matches = CountMatches(code, groups.Slice(0, i));
+                    if (matches > 0)
+                    {
+                        yield(matches, i);
+                    }
+                }
+
+                if (!code.Contains('#'))
+                {
+                    yield(1, 0);
+                }
+
+                for (; i <= groups.Length; i++)
+                {
+                    matches = CountMatches(code, groups.Slice(0, i));
+                    if (matches > 0)
+                    {
+                        yield(matches, i);
+                    }
+                }
+            }
         }
 
         public override void Solve()
         {
             var lines = this.Load().ToList();
-            var res = 0;
+            var res = 0L;
             foreach (var line in lines)
             {
-                res += CountMatches(("." + line.Code + ".").AsSpan(), line.Groups.ToArray());
+                res += CountMatches(line);
             }
             Console.WriteLine(res);
         }
@@ -113,10 +178,17 @@ namespace Aoc.y2023
         public override void SolveMain()
         {
             var lines = this.Load().ToList();
-            var res = 0;
+            var res = 0L;
             foreach (var line in lines.Select(Quintuple))
             {
-                res += CountMatches(("." + line.Code + ".").AsSpan(), line.Groups.ToArray());
+                try
+                {
+                    res += CountMatches(line);
+                }
+                catch (TimeoutException)
+                {
+                    Console.WriteLine(line);
+                }
             }
             Console.WriteLine(res);
         }
