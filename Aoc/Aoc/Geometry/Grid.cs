@@ -145,6 +145,11 @@ namespace Aoc.Geometry
             return new Grid<T>(new DictionaryGridImplementation<T>());
         }
 
+        public bool IsInBounds(Vector p)
+        {
+            return p.X >= MinX && p.X <= MaxX && p.Y >= MinY && p.Y <= MaxY;
+        }
+
         public static Grid<T> FromLines(List<string> lines, Func<char, T> selector)
         {
             var grid = WithSize(lines.Max(l => l.Length), lines.Count);
@@ -160,6 +165,31 @@ namespace Aoc.Geometry
                 ++y;
             }
             return grid;
+        }
+
+        public override bool Equals(object obj)
+        {
+            var other = obj as Grid<T>;
+            if (other == null)
+            {
+                return false;
+            }
+
+            if (other.Width != Width || other.Height != Height)
+            {
+                return false;
+            }
+
+            return this.Indexes().All(i => this[i].Equals(other[i]));
+        }
+
+        public override int GetHashCode()
+        {
+            const int largePrime = 111317;
+            return this
+                .Indexes()
+                .Select(i => this[i].GetHashCode())
+                .Aggregate((a, b) => unchecked(largePrime * a + b));
         }
     }
 }
