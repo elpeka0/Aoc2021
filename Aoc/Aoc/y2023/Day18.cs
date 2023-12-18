@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -107,79 +108,72 @@ namespace Aoc.y2023
             }
             loop.Add(p);
 
-            var ysteps = loop.Select(v => v.Y).Distinct().OrderBy(k => k).ToList();
-            var minx = loop.Min(v => v.X);
+            Console.WriteLine(Area(loop));
+        }
 
-            var total = 0L;
-            for (var i = 0; i < ysteps.Count - 1; i++)
+        private long Circumference(List<Vector> path)
+        {
+            var res = 0L;
+            for (var i = 0; i < path.Count; ++i)
             {
-                var cnt = CountInside(ysteps[i]);
-                var height = ysteps[i + 1] - ysteps[i] - 1;
-                total += cnt.Normal * height + cnt.Special;
+                var n = path[i + 1 < path.Count ? i + 1 : 0];
+                res += Math.Abs(n.X - path[i].X) + Math.Abs(n.Y - path[i].Y);
             }
-            Console.WriteLine(total);
+            return res;
+        }
 
-            (long Normal, long Special) CountInside(int y)
+        private long Distance(Vector a, Vector b)
+        {
+            return Math.Abs(a.X - b.X) + Math.Abs(a.Y - b.Y);
+        }
+
+        private long Area(List<Vector> path)
+        {
+            var xMin = long.MaxValue;
+            var xMax = long.MinValue;
+            var yMin = long.MaxValue;
+            var yMax = long.MinValue;
+
+            foreach (var v in path)
             {
-                var sum = 0L;
-                var isIn = false;
-                var x = minx;
-                var d = new List<(int X, bool IsIn)>();
-                foreach(var s in Intersections(y + 1).OrderBy(k => k))
-                {
-                    if (isIn)
-                    {
-                        sum += s - x + 1;
-                    }
-
-                    d.Add((x, isIn));
-                    x = s;
-                    isIn = !isIn;
-                }
-                
-                x = minx;
-                isIn = false;
-                foreach (var s in Intersections(y - 1).OrderBy(k => k))
-                {
-                    d.Add((x, isIn));
-                    x = s;
-                    isIn = !isIn;
-                }
-
-                d = d.GroupBy(t => t.X)
-                    .Select(g => (X: g.Key, g.Any(u => u.IsIn)))
-                    .OrderByDescending(t => t.X)
-                    .ToList();
-                var special = 0L;
-                foreach (var s in Intersections(y).OrderBy(k => k))
-                {
-                    if(d.FirstOrDefault(t => t.X < s).IsIn)
-                    {
-                        special += s - x + 1;
-                    }
-
-                    x = s;
-                }
-
-                return (sum, special);
+                if(v.X < xMin) xMin = v.X;
+                if(v.Y < yMin) yMin = v.Y;
+                if(v.X > xMax) xMax = v.X;
+                if(v.Y > yMax) yMax = v.Y;
             }
 
-            IEnumerable<int> Intersections(int y)
+            var sub = new List<Vector>();
+            var neg = 0L;
+            foreach (var p in path)
             {
-                for (var i = 0; i < loop.Count; i++)
+                var xBounded = p.X == xMin || p.X == xMax;
+                var yBounded = p.Y == yMin || p.Y == yMax;
+
+                if (xBounded != yBounded)
                 {
-                    var n = i + 1 < loop.Count ? i + 1 : 0;
-                    if (IsBetween(y, loop[i].Y, loop[n].Y))
+                    if (sub.Count > 0)
                     {
-                        yield return loop[i].X;
+                        sub.Add(p);
+                        neg += Area(sub) - Circumference(sub) + Distance(sub[0], p) - 1;
+                        sub.Clear();
+                    }
+                    else
+                    {
+                        sub.Add(p);
                     }
                 }
+                else if (!xBounded)
+                {
+                    sub.Add(p);
+                }
             }
 
-            bool IsBetween(int check, int a, int b)
+            if (sub.Count > 0)
             {
-                return check >= Math.Min(a, b) && check <= Math.Max(a, b);
+                neg += Area(sub) - Circumference(sub) + Distance(sub[0], path.Last()) - 1;
             }
+
+            return (xMax - xMin + 1)*(yMax - yMin + 1) - neg;
         }
     }
 }
