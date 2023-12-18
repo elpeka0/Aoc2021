@@ -11,6 +11,11 @@ namespace Aoc.Geometry
         private readonly Dictionary<Vector, T> grid = new Dictionary<Vector, T>();
         private readonly T defaultValue;
 
+        public DictionaryGridImplementation(T defaultValue)
+        {
+            this.defaultValue = defaultValue;
+        }
+
         public int MaxX { get; private set; } = int.MinValue;
         public int MaxY { get; private set; } = int.MinValue;
         public int MinX { get; private set; } = int.MaxValue;

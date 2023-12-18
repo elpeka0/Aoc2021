@@ -46,6 +46,26 @@ namespace Aoc
             return null;
         }
 
+        public static HashSet<T> FloodFill<T>(T initial, Func<T, IEnumerable<T>> step)
+        {
+            var queue = new Queue<Link<T>>();
+            queue.Enqueue(new Link<T>(initial, null));
+            var visited = new HashSet<T>();
+            while (queue.Any())
+            {
+                var next = queue.Dequeue();
+                visited.Add(next.Current);
+                foreach (var e in step(next.Current))
+                {
+                    if (!visited.Contains(e))
+                    {
+                        queue.Enqueue(new Link<T>(e, next));
+                    }
+                }
+            }
+            return visited;
+        }
+
         public static Dictionary<T, long> Dijkstra<T>(
             T initial, 
             Func<T, IEnumerable<(T Value, long Cost)>> step)

@@ -20,6 +20,8 @@ namespace Aoc.Parsing
 
         public static IParser<TTo> Map<TFrom, TTo>(this IParser<TFrom> from, Func<TFrom, TTo> converter) => new MapParser<TFrom, TTo>(from, converter);
 
+        public static IParser<TTo> Map<TTo>(this string from, Func<string, TTo> converter) => new MapParser<string, TTo>(Literal(from), converter);
+
         public static IParser<Discard> Discard<T>(this IParser<T> from) => from.Map(_ => new Discard());
 
         public static IParser<(TFirst, TSecond)> ThenOther<TFirst, TSecond>(this IParser<TFirst> first, IParser<TSecond> second) => new SequenceParser<TFirst, TSecond>(first, second);

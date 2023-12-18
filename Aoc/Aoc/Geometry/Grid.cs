@@ -53,34 +53,34 @@ namespace Aoc.Geometry
 
         public IEnumerable<Vector> Neighbors(int x, int y, bool diagonal)
         {
-            if (x > 0)
+            if (x >= MinX)
             {
                 yield return new(x - 1, y);
-                if (y > 0 && diagonal)
+                if (y >= MinY && diagonal)
                 {
                     yield return new(x - 1, y - 1);
                 }
-                if (y < this.Height - 1 && diagonal)
+                if (y <= MaxY && diagonal)
                 {
                     yield return new(x - 1, y + 1);
                 }
             }
-            if (y > 0)
+            if (y >= MinY)
             {
                 yield return new(x, y - 1);
             }
-            if (y < this.Height- 1)
+            if (y <= this.MaxY)
             {
                 yield return new(x, y + 1);
             }
-            if (x < this.Width - 1)
+            if (x <= this.MaxX)
             {
                 yield return new(x + 1, y);
-                if (y > 0 && diagonal)
+                if (y >= this.MinY && diagonal)
                 {
                     yield return new(x + 1, y - 1);
                 }
-                if (y < this.Height - 1 && diagonal)
+                if (y <= this.MaxY && diagonal)
                 {
                     yield return new(x + 1, y + 1);
                 }
@@ -117,6 +117,32 @@ namespace Aoc.Geometry
             return sb.ToString();
         }
 
+        public string ToString(int zoomFactor, Func<IEnumerable<T>, string> decider)
+        {
+            var sb = new StringBuilder();
+            for (var y = MinY; y <= this.MaxY; y += zoomFactor)
+            {
+                for (var x = MinX; x <= this.MaxX; x += zoomFactor)
+                {
+                    var l = new List<T>();
+                    for (var cy = 0; cy < zoomFactor; ++cy)
+                    {
+                        for (var cx = 0; cx < zoomFactor; ++cx)
+                        {
+                            l.Add(this[x + cx, y + cy]);
+                        }
+                    }
+
+                    sb.Append(decider(l));
+                    sb.Append(' ');
+                }
+
+                sb.AppendLine();
+            }
+
+            return sb.ToString();
+        }
+
         public GridSlice<T> Row(int y) => new(this, new(1, 0), this.Width, new(MinX, y));
         public GridSlice<T> Column(int x) => new(this, new(0, 1), this.Height, new(x, MinY));
 
@@ -140,9 +166,9 @@ namespace Aoc.Geometry
             return new Grid<T>(new ArrayGridImplementation<T>(width, height));
         }
 
-        public static Grid<T> Dynamic()
+        public static Grid<T> Dynamic(T defaultValue = default)
         {
-            return new Grid<T>(new DictionaryGridImplementation<T>());
+            return new Grid<T>(new DictionaryGridImplementation<T>(defaultValue));
         }
 
         public bool IsInBounds(Vector p)
