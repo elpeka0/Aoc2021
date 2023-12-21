@@ -90,10 +90,10 @@ namespace Aoc.y2023
 
             x++;
 
-            var filled = Utils.FloodFill(new Vector(x, y), p => grid.Neighbors(p, false).Where(i => grid[i] == '.'));
+            var filled = Utils.FloodFill(new Vector(x, y), (p, _) => grid.Neighbors(p, false).Where(i => grid[i] == '.'));
             foreach (var c in filled)
             {
-                grid[c] = 'O';
+                grid[c.Key] = 'O';
             }
         }
 

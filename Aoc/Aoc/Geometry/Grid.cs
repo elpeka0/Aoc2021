@@ -53,34 +53,34 @@ namespace Aoc.Geometry
 
         public IEnumerable<Vector> Neighbors(int x, int y, bool diagonal)
         {
-            if (x >= MinX)
+            if (x > MinX)
             {
                 yield return new(x - 1, y);
-                if (y >= MinY && diagonal)
+                if (y > MinY && diagonal)
                 {
                     yield return new(x - 1, y - 1);
                 }
-                if (y <= MaxY && diagonal)
+                if (y < MaxY && diagonal)
                 {
                     yield return new(x - 1, y + 1);
                 }
             }
-            if (y >= MinY)
+            if (y > MinY)
             {
                 yield return new(x, y - 1);
             }
-            if (y <= this.MaxY)
+            if (y < this.MaxY)
             {
                 yield return new(x, y + 1);
             }
-            if (x <= this.MaxX)
+            if (x < this.MaxX)
             {
                 yield return new(x + 1, y);
-                if (y >= this.MinY && diagonal)
+                if (y > this.MinY && diagonal)
                 {
                     yield return new(x + 1, y - 1);
                 }
-                if (y <= this.MaxY && diagonal)
+                if (y < this.MaxY && diagonal)
                 {
                     yield return new(x + 1, y + 1);
                 }
@@ -216,6 +216,13 @@ namespace Aoc.Geometry
                 .Indexes()
                 .Select(i => this[i].GetHashCode())
                 .Aggregate((a, b) => unchecked(largePrime * a + b));
+        }
+
+        public Vector ModulusVector(Vector vector)
+        {
+            var x = ((vector.X % Width) + Width) % Width;
+            var y = ((vector.Y % Height) + Height) % Height;
+            return new(x, y);
         }
     }
 }

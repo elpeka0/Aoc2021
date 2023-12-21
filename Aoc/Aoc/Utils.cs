@@ -46,20 +46,19 @@ namespace Aoc
             return null;
         }
 
-        public static HashSet<T> FloodFill<T>(T initial, Func<T, IEnumerable<T>> step)
+        public static Dictionary<T, int> FloodFill<T>(T initial, Func<T, int, IEnumerable<T>> step)
         {
-            var queue = new Queue<Link<T>>();
-            queue.Enqueue(new Link<T>(initial, null));
-            var visited = new HashSet<T>();
-            while (queue.Any())
+            var queue = new Queue<(T, int)>();
+            queue.Enqueue((initial, 0));
+            var visited = new Dictionary<T, int>();
+            while (queue.TryDequeue(out var next))
             {
-                var next = queue.Dequeue();
-                visited.Add(next.Current);
-                foreach (var e in step(next.Current))
+                if (!visited.ContainsKey(next.Item1))
                 {
-                    if (!visited.Contains(e))
+                    visited[next.Item1] = next.Item2;
+                    foreach (var e in step(next.Item1, next.Item2))
                     {
-                        queue.Enqueue(new Link<T>(e, next));
+                        queue.Enqueue((e, next.Item2 + 1));
                     }
                 }
             }
