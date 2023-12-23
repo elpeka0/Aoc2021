@@ -153,5 +153,15 @@ namespace Aoc
 
             return value;
         }
+
+        public static bool Between(this int value, int a, int b)
+        {
+            return value >= Math.Min(a, b) && value <= Math.Max(a, b);
+        }
+
+        public static bool Between(this long value, long a, long b)
+        {
+            return value >= Math.Min(a, b) && value <= Math.Max(a, b);
+        }
     }
 }
