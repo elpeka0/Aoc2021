@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -46,30 +47,75 @@ namespace Aoc.y2023
             Console.WriteLine(res);
         }
 
+        private class State
+        {
+            public Vector s;
+            public HashSet<Vector> visited;
+            public IEnumerator<Vector> e;
+            public long best = -1L;
+            public Action<long> continuation;
+        }
+
         private long LongestPath(Vector start, Vector target, Grid<char> grid, Func<Vector, IEnumerable<Vector>> stepFunc)
         {
-            return Impl(start, new HashSet<Vector>());
-
-            long Impl(Vector s, HashSet<Vector> visited)
+            var stack = new Stack<Action>();
+            long res = 0L;
+            var initial = new State
             {
-                visited.Add(s);
-                if (s == target)
+                s = start,
+                visited = new HashSet<Vector>(),
+                continuation = l => res = l
+            };
+            stack.Push(() => Head(initial));
+            while (stack.Count > 0)
+            {
+                var next = stack.Pop();
+                next();
+            }
+            return res;
+
+            void Head(State state)
+            {
+                state.visited.Add(state.s);
+                if (state.s == target)
                 {
-                    return 0;
+                    state.continuation(0L);
+                    return;
                 }
-                var best = -1L;
-                foreach (var n in stepFunc(s).Where(i => grid[i] != '#'))
+
+                state.e = stepFunc(state.s).Where(i => grid[i] != '#').GetEnumerator();
+
+                stack.Push(() => Tail(state));
+                stack.Push(() => Body(state));
+            }
+
+            void Body(State state)
+            {
+                if (state.e.MoveNext())
                 {
-                    if (!visited.Contains(n))
+                    stack.Push(() => Body(state));
+                    if (!state.visited.Contains(state.e.Current))
                     {
-                        var l = Impl(n, visited.ToHashSet());
-                        if (l > best)
+                        var ns = new State
                         {
-                            best = l;
-                        }
+                            s = state.e.Current,
+                            visited = state.visited.ToHashSet(),
+                            continuation = l =>
+                            {
+                                if (l > state.best)
+                                {
+                                    state.best = l;
+                                }
+                            }
+                        };
+                        stack.Push(() => Head(ns));
                     }
                 }
-                return best + 1;
+            }
+
+            void Tail(State state)
+            {
+                state.continuation(state.best + 1);
             }
         }
     }
