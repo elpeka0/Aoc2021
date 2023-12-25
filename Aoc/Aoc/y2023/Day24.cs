@@ -1,6 +1,7 @@
 ﻿using Aoc.Geometry;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -46,13 +47,10 @@ namespace Aoc.y2023
                 var r = (e1.B * e0.D - e0.B * e1.D) / (double) (e1.A * e0.B - e0.A * e1.B);
                 var s = (e0.D + r * e0.A) / (double) e0.B;
                 var res = (DoubleVector)Position + r * (DoubleVector)Velocity;
-                /*var check = other.Position + s * other.Velocity;
-                if (res == check)
-                {
-                    return res;
-                }*/
-
-                if (r > 0 && s > 0)
+                var check = (DoubleVector)other.Position + s * (DoubleVector)other.Velocity;
+                var diff = res - check;
+                var epsilon = 2;
+                if (Math.Abs(diff.X) < epsilon && Math.Abs(diff.Y) < epsilon && Math.Abs(diff.Z) < epsilon && r > 0 && s > 0)
                 {
                     return res;
                 }
@@ -97,11 +95,11 @@ namespace Aoc.y2023
                 .ToList();
         }
 
-        private const long Min = 200000000000000;
-        private const long Max = 400000000000000;
-
         public override void Solve()
         {
+            const long Min = 200000000000000;
+            const long Max = 400000000000000;
+
             var all = Load()
                 .Select(t => new Trajectory(new LongVector(t.Position.X, t.Position.Y), new LongVector(t.Velocity.X, t.Velocity.Y)))
                 .ToList();
@@ -125,7 +123,28 @@ namespace Aoc.y2023
 
         public override void SolveMain()
         {
-            throw new NotImplementedException();
+            var all = Load();
+            var points = new List<DoubleVector>();
+
+            for (var i = 0; i < all.Count; i++)
+            {
+                for (var j = i + 1; j < all.Count; j++)
+                {
+                    if (all[i].Intersection(all[j]) is { } p)
+                    {
+                        points.Add(p);
+                    }
+                }
+            }
+
+            var v0 = points[1] - points[0];
+            var v1 = points[2] - points[0];
+            v0 = v0 * (1/Math.Sqrt(v0.X*v0.X + v0.Y*v0.Y + v0.Z*v0.Z));
+            v1 = v1 * (1/Math.Sqrt(v1.X*v1.X + v1.Y*v1.Y + v1.Z*v1.Z));
+            var normal = v0.Cross(v1);
+            normal = normal*(1/Math.Sqrt(normal.X*normal.X + normal.Y*normal.Y + normal.Z*normal.Z));
+
+            Debugger.Break();
         }
     }
 }

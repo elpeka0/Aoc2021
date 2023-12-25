@@ -145,5 +145,19 @@ namespace Aoc.Geometry
             y = this.Y;
             z = this.Z;
         }
+
+        public static explicit operator LongVector(DoubleVector v)
+        {
+            return new LongVector((long)v.X, (long)v.Y, (long)v.Z);
+        }
+
+        public LongVector Cross(LongVector other)
+        {
+            return new LongVector(
+                Y * other.Z - Z * other.Y,
+                Z * other.X - X * other.Z,
+                X * other.Y - Y * other.Z
+            );
+        }
     }
 }

@@ -150,5 +150,14 @@ namespace Aoc.Geometry
         {
             return new DoubleVector(v.X, v.Y, v.Z);
         }
+
+        public DoubleVector Cross(DoubleVector other)
+        {
+            return new DoubleVector(
+                Y*other.Z - Z*other.Y,
+                Z*other.X - X*other.Z,
+                X*other.Y - Y*other.Z
+            );
+        }
     }
 }

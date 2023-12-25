@@ -145,5 +145,14 @@ namespace Aoc.Geometry
             y = this.Y;
             z = this.Z;
         }
+
+        public Vector Cross(Vector other)
+        {
+            return new Vector(
+                Y * other.Z - Z * other.Y,
+                Z * other.X - X * other.Z,
+                X * other.Y - Y * other.Z
+            );
+        }
     }
 }
