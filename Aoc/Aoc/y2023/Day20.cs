@@ -36,6 +36,8 @@ namespace Aoc.y2023
 
             public char Type { get; }
 
+            public string Name { get; set; }
+
             public Gate(char type, Pulse initial, Func<Gate, Pulse, Pulse> transition)
             {
                 this._transition = transition;
@@ -94,9 +96,24 @@ namespace Aoc.y2023
 
             public static Gate Conjunction(System system) => new Gate('&', Pulse.Low, (gate, _) =>
             {
-                return gate.Inputs.All(s => system.Gates[s].State == Pulse.High)
+                var res = gate.Inputs.All(s => system.Gates[s].State == Pulse.High)
                     ? Pulse.Low
                     : Pulse.High;
+                // var ofInterest = new[] { "sv", "ch", "gh", "th" };
+                //var ofInterest = new[] { "ch" };
+                //if (res == Pulse.High && ofInterest.Contains(gate.Name))
+                //{
+                //    Console.WriteLine($"{gate.Name}: {system.Iteration}");
+                //}
+                if (gate.Name == "cn")
+                {
+                    var high = gate.Inputs.Where(i => system.Gates[i].State == Pulse.High).ToList();
+                    if (high.Count > 1)
+                    {
+                        Console.WriteLine($"{system.Iteration}: {string.Join(", ", high)}");
+                    }
+                }
+                return res;
             });
 
             public override string ToString() => State.ToString();
@@ -133,34 +150,40 @@ namespace Aoc.y2023
                     _ => Gate.Identity()
                 })
                 .ThenWs(Letter().String())
-                .Map(t => (Gate: t.Item1, Name: t.Item2))
+                .Map(t =>
+                {
+                    t.Item1.Name = t.Item2;
+                    return t.Item1;
+                })
                 .ThenWs("->")
                 .ThenWs(Letter().String().RepeatWithSeperatorWs(","))
                 .Map(t =>
                 {
-                    t.Item1.Gate.Outputs = t.Item2.ToList();
+                    t.Item1.Outputs = t.Item2.ToList();
                     return t.Item1;
                 });
-            foreach (var gateSpec in GetInputLines(false).Select(parser.Evaluate))
+            foreach (var gate in GetInputLines(false).Select(parser.Evaluate))
             {
-                if (system.Gates.TryGetValue(gateSpec.Name, out var existing))
+                if (system.Gates.TryGetValue(gate.Name, out var existing))
                 {
-                    gateSpec.Gate.Inputs = existing.Inputs;
+                    gate.Inputs = existing.Inputs;
                 }
 
-                foreach (var o in gateSpec.Gate.Outputs)
+                foreach (var o in gate.Outputs)
                 {
                     if (!system.Gates.TryGetValue(o, out var other))
                     {
                         other = Gate.Identity();
                         system.Gates.Add(o, other);
                     }
-                    other.Inputs.Add(gateSpec.Name);
+                    other.Inputs.Add(gate.Name);
                 }
 
-                system.Gates[gateSpec.Name] = gateSpec.Gate;
+                system.Gates[gate.Name] = gate;
             }
+            var rxin = system.Gates["rx"].Inputs;
             system.Gates["rx"] = Gate.Rx(system);
+            system.Gates["rx"].Inputs.AddRange(rxin);
 
             return system;
         }
@@ -176,18 +199,32 @@ namespace Aoc.y2023
             Console.WriteLine(system.Pulses[Pulse.Low] * system.Pulses[Pulse.High]);
         }
 
+        private void Visualize(System system)
+        {
+
+            Console.WriteLine("digraph {");
+
+            foreach (var gate in system.Gates.OrderBy(kv => kv.Key))
+            {
+                Console.WriteLine($"{gate.Key} [color={(gate.Value.Type == '%' ? "\"#ff0000\"" : "\"#00ff00\"")}];");
+                foreach (var o in gate.Value.Outputs)
+                {
+                    Console.WriteLine($"{gate.Key} -> {o};");
+                }
+            }
+
+            Console.WriteLine("}");
+        }
+
         public override void SolveMain()
         {
             var system = this.Load();
+
             while (true)
             {
-                if (system.Iteration % 1000 == 0)
-                {
-                    Console.WriteLine($"Iteration: {system.Iteration}");
-                }
-
                 system.Tick(Pulse.Low);
             }
+            //Visualize(system);
         }
     }
 }
