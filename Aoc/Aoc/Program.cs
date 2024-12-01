@@ -1,5 +1,5 @@
 ﻿using System;
-using Aoc.y2023;
+using Aoc.y2024;
 
 namespace Aoc
 {
@@ -7,7 +7,7 @@ namespace Aoc
     {
         static void Main(string[] args)
         {
-            new Day20().SolveMain();
+            new Day01().SolveMain();
         }
     }
 }
