@@ -15,15 +15,19 @@ namespace Aoc
         {
             this.day = day;
         }
-        protected IEnumerable<string> GetInputLines(bool mainPuzzle)
+        protected IEnumerable<string> GetInputLines(bool mainPuzzle = false)
         {
-            var postfix = mainPuzzle ? "-main" : "";
-            using var reader = File.OpenText($"input\\input{postfix}{this.day:00}.txt");
-            string line;
-            while ((line = reader.ReadLine()) != null)
+            using var reader = this.OpenInput(mainPuzzle);
+            while (reader.ReadLine() is { } line)
             {
                 yield return line;
             }
+        }
+
+        protected StreamReader OpenInput(bool mainPuzzle = false)
+        {
+            var postfix = mainPuzzle ? "-main" : "";
+            return File.OpenText($"input\\input{postfix}{this.day:00}.txt");
         }
 
         protected IEnumerable<int> SplitInts(string line, params char[] seperator)
