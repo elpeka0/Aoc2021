@@ -163,5 +163,21 @@ namespace Aoc
         {
             return value >= Math.Min(a, b) && value <= Math.Max(a, b);
         }
+
+        public static IEnumerable<T> PartialSort<T>(this IEnumerable<T> input, Func<T, T, bool> comesBefore)
+        {
+            var l = input.ToList();
+            for (var i = 0; i < l.Count; i++)
+            {
+                for (var j = i + 1; j < l.Count; j++)
+                {
+                    if (comesBefore(l[j], l[i]))
+                    {
+                        (l[i], l[j]) = (l[j], l[i]);
+                    }
+                }
+            }
+            return l;
+        }
     }
 }
