@@ -179,5 +179,13 @@ namespace Aoc
             }
             return l;
         }
+
+        public static IEnumerable<LinkedListNode<T>> EnumerateNodes<T>(this LinkedList<T> list)
+        {
+            for (var p = list.First; p != null; p = p.Next)
+            {
+                yield return p;
+            }
+        }
     }
 }
