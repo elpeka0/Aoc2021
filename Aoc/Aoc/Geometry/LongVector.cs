@@ -159,5 +159,10 @@ namespace Aoc.Geometry
                 X * other.Y - Y * other.Z
             );
         }
+
+        public Vector ToVector()
+        {
+            return new((int)X, (int)Y, (int)Z);
+        }
     }
 }

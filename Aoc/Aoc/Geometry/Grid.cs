@@ -102,13 +102,21 @@ namespace Aoc.Geometry
 
         public override string ToString()
         {
+            return ToString(' ');
+        }
+
+        public string ToString(char? sep)
+        {
             var sb = new StringBuilder();
             for (var y = MinY; y <= this.MaxY; ++y)
             {
                 for (var x = MinX; x <= this.MaxX; ++x)
                 {
                     sb.Append(this[x, y]);
-                    sb.Append(' ');
+                    if (sep != null)
+                    {
+                        sb.Append(sep);
+                    }
                 }
 
                 sb.AppendLine();
@@ -117,7 +125,7 @@ namespace Aoc.Geometry
             return sb.ToString();
         }
 
-        public string ToString(int zoomFactor, Func<IEnumerable<T>, string> decider)
+        public string ToString(int zoomFactor, char? sep, Func<IEnumerable<T>, string> decider)
         {
             var sb = new StringBuilder();
             for (var y = MinY; y <= this.MaxY; y += zoomFactor)
@@ -134,7 +142,10 @@ namespace Aoc.Geometry
                     }
 
                     sb.Append(decider(l));
-                    sb.Append(' ');
+                    if (sep != null)
+                    {
+                        sb.Append(sep);
+                    }
                 }
 
                 sb.AppendLine();
