@@ -154,5 +154,10 @@ namespace Aoc.Geometry
                 X * other.Y - Y * other.Z
             );
         }
+
+        public static int Manhattan(Vector a, Vector b)
+        {
+            return Math.Abs(a.X - b.X) + Math.Abs(a.Y - b.Y) + Math.Abs(a.Z - b.Z);
+        }
     }
 }
