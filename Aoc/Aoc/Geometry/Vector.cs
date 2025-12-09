@@ -114,6 +114,11 @@ namespace Aoc.Geometry
             return a.Scale(new Vector(scalar, scalar, scalar));
         }
 
+        public static Vector operator /(Vector a, int scalar)
+        {
+            return new Vector(a.X / scalar, a.Y / scalar, a.Z / scalar);
+        }
+
         public override string ToString()
         {
             return $"{this.X}, {this.Y}, {this.Z}";

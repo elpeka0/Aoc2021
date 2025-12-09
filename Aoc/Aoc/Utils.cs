@@ -187,5 +187,38 @@ namespace Aoc
                 yield return p;
             }
         }
+
+        public static int BinarySearch<T>(List<T> l, Func<T, int> comparer)
+        {
+            var down = 0;
+            var up = l.Count;
+
+            while (down < up)
+            {
+                var mid = (down + up) / 2;
+                var c = comparer(l[mid]);
+                if (c == 0)
+                {
+                    var j = mid - 1;
+                    while (comparer(l[j]) == 0)
+                    {
+                        j--;
+                    }
+
+                    return j + 1;
+                }
+                
+                if (c > 0)
+                {
+                    up = mid - 1;
+                }
+                else
+                {
+                    down = mid + 1;
+                }
+            }
+
+            return down;
+        }
     }
 }
