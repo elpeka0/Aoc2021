@@ -160,6 +160,11 @@ namespace Aoc.Geometry
             );
         }
 
+        public double Abs()
+        {
+            return Math.Sqrt((double)X*X + (double)Y*Y + (double)Z*Z);
+        }
+
         public static int Manhattan(Vector a, Vector b)
         {
             return Math.Abs(a.X - b.X) + Math.Abs(a.Y - b.Y) + Math.Abs(a.Z - b.Z);
